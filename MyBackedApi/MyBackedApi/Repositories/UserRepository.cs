@@ -59,5 +59,11 @@ namespace MyBackendApi.Repositories
                 await _context.SaveChangesAsync();
             }
         }
+
+        public async Task AddOccupationAsync(Occupation occupation)
+        {
+            await _context.Occupations.AddAsync(occupation);
+            await _context.SaveChangesAsync();
+        }
     }
 }

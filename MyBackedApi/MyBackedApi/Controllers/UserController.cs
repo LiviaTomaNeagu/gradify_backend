@@ -50,5 +50,12 @@ namespace MyBackendApi.Controllers
             await _userService.DeleteUserAsync(id);
             return Ok("Success!");
         }
+
+        [HttpPost("add-occupation")]
+        public async Task<IActionResult> AddOccupation([FromBody] AddOccupationRequest request)
+        {
+            await _userService.AddOccupationAsync(request);
+            return Ok("Success!");
+        }
     }
 }

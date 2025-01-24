@@ -93,5 +93,15 @@ namespace MyBackendApi.Services
 
             await _userRepository.DeleteUserAsync(id);
         }
+
+        public async Task AddOccupationAsync(AddOccupationRequest occupation)
+        {
+            var occupationEntity = new Occupation
+            {
+                Name = occupation.Name
+            };
+
+            await _userRepository.AddOccupationAsync(occupationEntity);
+        }
     }
 }
