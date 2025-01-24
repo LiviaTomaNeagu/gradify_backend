@@ -10,5 +10,6 @@ namespace MyBackedApi.DTOs.User.Requests
         public string Email { get; set; }
         public string Password { get; set; }
         public RoleTypeEnum Role { get; set; }
+        public Guid OccupationId { get; set; }
     }
 }

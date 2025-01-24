@@ -25,7 +25,8 @@ namespace MyBackendApi.Services
                 Username = user.Username,
                 Email = user.Email,
                 Role = user.Role,
-                CompletedSteps = user.CompletedSteps
+                CompletedSteps = user.CompletedSteps,
+                OccupationName = user.Occupation.Name
             }).ToList();
         }
 
@@ -40,7 +41,8 @@ namespace MyBackendApi.Services
                 Username = user.Username,
                 Email = user.Email,
                 Role = user.Role,
-                CompletedSteps = user.CompletedSteps
+                CompletedSteps = user.CompletedSteps,
+                OccupationName = user.Occupation.Name
             };
         }
 
@@ -53,7 +55,8 @@ namespace MyBackendApi.Services
                 Surname = user.Surname,
                 Email = user.Email,
                 PasswordHash = user.Password,
-                Role = user.Role
+                Role = user.Role,
+                OccupationId = user.OccupationId
             };
 
             if (string.IsNullOrEmpty(user.Name))

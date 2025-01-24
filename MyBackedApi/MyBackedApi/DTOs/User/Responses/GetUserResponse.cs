@@ -1,4 +1,5 @@
 ﻿using MyBackedApi.Enums;
+using MyBackedApi.Models;
 
 namespace MyBackendApi.Models.Responses
 {
@@ -11,6 +12,7 @@ namespace MyBackendApi.Models.Responses
         public string Email { get; set; }
         public RoleTypeEnum Role { get; set; }
         public int CompletedSteps { get; set; }
+        public string OccupationName { get; set; }
     }
 }
 

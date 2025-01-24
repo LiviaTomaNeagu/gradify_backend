@@ -17,12 +17,16 @@ namespace MyBackendApi.Repositories
 
         public async Task<IEnumerable<User>> GetAllUsersAsync()
         {
-            return await _context.Users.ToListAsync();
+            return await _context.Users
+                .Include(u => u.Occupation)
+                .ToListAsync();
         }
 
         public async Task<User> GetUserByIdAsync(Guid id)
         {
-            var user = await _context.Users.FindAsync(id);
+            var user = await _context.Users
+                .Include(u => u.Occupation)
+                .FirstOrDefaultAsync(u => u.Id == id);
 
             if (user == null)
             {
