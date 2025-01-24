@@ -12,6 +12,7 @@ namespace MyBackedApi.DTOs.Forum.Responses
         public Guid UserId { get; set; }
         public string Name { get; set; }
         public string Surname { get; set; }
+        public string OccupationName { get; set; }
         public TopicEnum Topic { get; set; }
 
         public List<GetAnswerResponse> Answers { get; set; }

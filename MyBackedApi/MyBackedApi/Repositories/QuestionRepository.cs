@@ -22,8 +22,9 @@ namespace MyBackendApi.Repositories
         public async Task<IEnumerable<Question>> GetAllQuestionsAsync()
         {
             return await _context.Questions
-                .Include(q => q.User)
                 .Include(q => q.Answers)
+                .Include(q => q.User)
+                    .ThenInclude(u => u.Occupation)
                 .ToListAsync();
         }
 
