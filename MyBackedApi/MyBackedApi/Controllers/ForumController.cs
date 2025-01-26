@@ -34,10 +34,10 @@ namespace MyBackendApi.Controllers
             return CreatedAtAction(nameof(GetAllAnswersForQuestion), new { questionId }, answer);
         }
 
-        [HttpGet("questions")]
-        public async Task<GetQuestionsResponse> GetAllQuestions()
+        [HttpPost("questions")]
+        public async Task<GetQuestionsResponse> GetAllQuestions([FromBody] GetQuestionsRequest payload)
         {
-            var questions = await _questionService.GetAllQuestionsAsync();
+            var questions = await _questionService.GetAllQuestionsAsync(payload);
             return questions;
         }
 
