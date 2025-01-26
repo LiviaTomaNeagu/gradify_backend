@@ -7,6 +7,6 @@ namespace MyBackedApi.DTOs.Forum.Requests
         public string Search { get; set; }
         public int Page { get; set; }
         public int PageSize { get; set; }
-        public TopicEnum? Topic { get; set; }
+        public List<TopicEnum>? Topics { get; set; }
     }
 }

@@ -34,9 +34,9 @@ namespace MyBackendApi.Repositories
                 query = query.Where(q => q.Title.Contains(payload.Search) || q.Content.Contains(payload.Search));
             }
 
-            if (payload.Topic != null)
+            if (payload.Topics != null && payload.Topics.Any())
             {
-                query = query.Where(q => q.Topic == payload.Topic);
+                query = query.Where(q => payload.Topics.Contains(q.Topic));
             }
 
             var totalQuestions = await query.CountAsync();
