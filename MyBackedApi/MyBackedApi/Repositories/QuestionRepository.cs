@@ -21,7 +21,7 @@ namespace MyBackendApi.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<Question>> GetAllQuestionsAsync(GetQuestionsRequest payload)
+        public async Task<(IEnumerable<Question> Questions, int TotalQuestions)> GetAllQuestionsAsync(GetQuestionsRequest payload)
         {
             var query = _context.Questions
                 .Include(q => q.Answers)
@@ -39,11 +39,14 @@ namespace MyBackendApi.Repositories
                 query = query.Where(q => q.Topic == payload.Topic);
             }
 
-            var skip = (payload.Page - 1) * payload.PageSize;
-            query = query.Skip(skip).Take(payload.PageSize);
+            var totalQuestions = await query.CountAsync();
 
-            return await query.ToListAsync();
+            var skip = (payload.Page - 1) * payload.PageSize;
+            var questions = await query.Skip(skip).Take(payload.PageSize).ToListAsync();
+
+            return (questions, totalQuestions);
         }
+
 
 
         public async Task<Question?> GetQuestionByIdAsync(Guid id)
