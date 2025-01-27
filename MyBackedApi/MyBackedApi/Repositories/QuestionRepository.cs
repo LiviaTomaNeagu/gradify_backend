@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MyBackedApi.Data;
+using MyBackedApi.DTOs.Forum.Requests;
+using MyBackedApi.Enums;
 using MyBackedApi.Models;
 
 namespace MyBackendApi.Repositories
@@ -19,13 +21,33 @@ namespace MyBackendApi.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<Question>> GetAllQuestionsAsync()
+        public async Task<(IEnumerable<Question> Questions, int TotalQuestions)> GetAllQuestionsAsync(GetQuestionsRequest payload)
         {
-            return await _context.Questions
-                .Include(q => q.User)
+            var query = _context.Questions
                 .Include(q => q.Answers)
-                .ToListAsync();
+                .Include(q => q.User)
+                    .ThenInclude(u => u.Occupation)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(payload.Search))
+            {
+                query = query.Where(q => q.Title.Contains(payload.Search) || q.Content.Contains(payload.Search));
+            }
+
+            if (payload.Topics != null && payload.Topics.Any())
+            {
+                query = query.Where(q => payload.Topics.Contains(q.Topic));
+            }
+
+            var totalQuestions = await query.CountAsync();
+
+            var skip = (payload.Page - 1) * payload.PageSize;
+            var questions = await query.Skip(skip).Take(payload.PageSize).ToListAsync();
+
+            return (questions, totalQuestions);
         }
+
+
 
         public async Task<Question?> GetQuestionByIdAsync(Guid id)
         {
@@ -34,4 +56,4 @@ namespace MyBackendApi.Repositories
                 .FirstOrDefaultAsync(q => q.Id == id);
         }
     }
-}
+}   

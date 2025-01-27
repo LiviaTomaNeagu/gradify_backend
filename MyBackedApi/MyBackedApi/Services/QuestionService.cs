@@ -33,15 +33,14 @@ namespace MyBackendApi.Services
             return question;
         }
 
-        public async Task<GetQuestionsResponse> GetAllQuestionsAsync()
+        public async Task<GetQuestionsResponse> GetAllQuestionsAsync(GetQuestionsRequest payload)
         {
-            var questions =  await _questionRepository.GetAllQuestionsAsync();
+            var (questions, totalQuestions) =  await _questionRepository.GetAllQuestionsAsync(payload);
 
             var response = new GetQuestionsResponse
             {
                 Questions = questions.ToGetQuestionResponses(),
-                totalQuestions = questions.Count(),
-                totalFilteredQuestions = questions.Count()
+                totalQuestions = totalQuestions
             };
             return response;
         }

@@ -18,7 +18,7 @@ namespace MyBackedApi.Mappings
                 Topic = question.Topic,
                 Name = question.User.Name,
                 Surname = question.User.Surname,
-                Answers = question.Answers.Select(a => a.ToGetAnswerResponse()).ToList()
+                OccupationName = question.User.Occupation.Name
             };
         }
 
