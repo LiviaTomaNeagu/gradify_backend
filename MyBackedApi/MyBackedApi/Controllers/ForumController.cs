@@ -60,5 +60,13 @@ namespace MyBackendApi.Controllers
             var answers = await _answerService.GetAllAnswersForQuestionAsync(questionId);
             return answers;
         }
+
+        [HttpGet("questions/{questionId}/details")]
+        public async Task<GetQuestionDetailsResponse> GetQuestionDetails(Guid questionId)
+        {
+            var answers = await _questionService.GetQuestionDetails(questionId);
+            return answers;
+        }
+
     }
 }

@@ -18,8 +18,10 @@ namespace MyBackendApi.Mappings
                 Id = answer.Id,
                 Content = answer.Content,
                 CreatedAt = answer.CreatedAt,
-                UserId = answer.UserId,
                 QuestionId = answer.QuestionId,
+                Name = answer.User.Name,
+                Surname = answer.User.Surname,
+                OccupationName = answer.User.Occupation.Name
             };
         }
 
