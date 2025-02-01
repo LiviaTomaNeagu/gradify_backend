@@ -10,6 +10,7 @@ namespace MyBackendApi.Services
     {
         private readonly AnswerRepository _answerRepository;
         private readonly QuestionRepository _questionRepository;
+        private readonly UserRepository _userRepository;
 
         public AnswerService(AnswerRepository answerRepository, QuestionRepository questionRepository)
         {
@@ -25,13 +26,16 @@ namespace MyBackendApi.Services
                 throw new KeyNotFoundException("Question not found");
             }
 
+            var user = await _userRepository.GetUserByIdAsync(request.UserId);
+
             var answer = new Answer
             {
                 Id = Guid.NewGuid(),
                 QuestionId = questionId,
                 Content = request.Content,
                 CreatedAt = DateTime.UtcNow,
-                UserId = request.UserId
+                UserId = request.UserId,
+                User = user
             };
 
             await _answerRepository.AddAnswerAsync(answer);
