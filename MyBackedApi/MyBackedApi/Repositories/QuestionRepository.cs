@@ -27,6 +27,7 @@ namespace MyBackendApi.Repositories
                 .Include(q => q.Answers)
                 .Include(q => q.User)
                     .ThenInclude(u => u.Occupation)
+                .OrderByDescending(q => q.CreatedAt)
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(payload.Search))
@@ -42,7 +43,8 @@ namespace MyBackendApi.Repositories
             var totalQuestions = await query.CountAsync();
 
             var skip = (payload.Page - 1) * payload.PageSize;
-            var questions = await query.Skip(skip).Take(payload.PageSize).ToListAsync();
+            var questions = await query.Skip(skip).Take(payload.PageSize)
+                .ToListAsync();
 
             return (questions, totalQuestions);
         }
@@ -51,13 +53,21 @@ namespace MyBackendApi.Repositories
 
         public async Task<Question?> GetQuestionByIdAsync(Guid id)
         {
-            return await _context.Questions
+            var question = await _context.Questions
                 .Include(q => q.Answers)
                     .ThenInclude(a => a.User)
-                    .ThenInclude(u => u.Occupation)
+                        .ThenInclude(u => u.Occupation)
                 .Include(q => q.User)
                     .ThenInclude(u => u.Occupation)
                 .FirstOrDefaultAsync(q => q.Id == id);
+
+            if (question != null)
+            {
+                question.Answers = question.Answers.OrderBy(a => a.CreatedAt).ToList();
+            }
+
+            return question;
         }
+
     }
 }   

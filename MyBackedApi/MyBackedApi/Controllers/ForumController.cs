@@ -27,12 +27,6 @@ namespace MyBackendApi.Controllers
         }
 
 
-        [HttpPost("questions/{questionId}/answers/add")]
-        public async Task<IActionResult> AddAnswer(Guid questionId, [FromBody] AddAnswerRequest request)
-        {
-            var answer = await _answerService.AddAnswerAsync(questionId, request);
-            return CreatedAtAction(nameof(AddAnswer), new { questionId }, answer);
-        }
 
         [HttpPost("questions")]
         public async Task<GetQuestionsResponse> GetAllQuestions([FromBody] GetQuestionsRequest payload)
@@ -61,5 +55,11 @@ namespace MyBackendApi.Controllers
             return answers;
         }
 
+        [HttpPost("questions/{questionId}/details")]
+        public async Task<IActionResult> AddAnswer(Guid questionId, [FromBody] AddAnswerRequest request)
+        {
+            var answer = await _answerService.AddAnswerAsync(questionId, request);
+            return CreatedAtAction(nameof(AddAnswer), new { questionId }, new {answer.Id, answer.QuestionId, answer.Content, answer.CreatedAt, answer.UserId} );
+        }
     }
 }
