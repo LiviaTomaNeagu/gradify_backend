@@ -50,5 +50,11 @@ namespace MyBackendApi.Services
             var question =  await _questionRepository.GetQuestionByIdAsync(id);
             return question?.ToGetQuestionResponse();
         }
+
+        public async Task<GetQuestionDetailsResponse?> GetQuestionDetails(Guid id)
+        {
+            var question = await _questionRepository.GetQuestionByIdAsync(id);
+            return question?.ToGetQuestionDetailsResponse();
+        }
     }
 }

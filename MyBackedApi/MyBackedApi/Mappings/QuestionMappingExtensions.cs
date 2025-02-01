@@ -27,5 +27,22 @@ namespace MyBackedApi.Mappings
             return questions.Select(q => q.ToGetQuestionResponse()).ToList();
         }
 
+        public static GetQuestionDetailsResponse ToGetQuestionDetailsResponse(this Question question)
+        {
+            return new GetQuestionDetailsResponse
+            {
+                Id = question.Id,
+                Title = question.Title,
+                Content = question.Content,
+                CreatedAt = question.CreatedAt,
+                UserId = question.UserId,
+                Topic = question.Topic,
+                Name = question.User.Name,
+                Surname = question.User.Surname,
+                OccupationName = question.User.Occupation.Name,
+                Answers = question.Answers.ToGetAnswerResponses()
+            };
+        }
+
     }
 }

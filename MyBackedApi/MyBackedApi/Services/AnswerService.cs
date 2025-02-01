@@ -41,11 +41,5 @@ namespace MyBackendApi.Services
             await _answerRepository.AddAnswerAsync(answer);
             return answer;
         }
-
-        public async Task<List<GetAnswerResponse>> GetAllAnswersForQuestionAsync(Guid questionId)
-        {
-            var answers =  await _answerRepository.GetAllAnswersForQuestionAsync(questionId);
-            return answers.ToGetAnswerResponses();
-        }
     }
 }
