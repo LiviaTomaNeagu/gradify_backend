@@ -21,11 +21,5 @@ namespace MyBackendApi.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<Answer>> GetAllAnswersForQuestionAsync(Guid questionId)
-        {
-            return await _context.Answers
-                .Where(a => a.QuestionId == questionId)
-                .ToListAsync();
-        }
     }   
 }

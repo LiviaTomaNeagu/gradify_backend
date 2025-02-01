@@ -53,6 +53,10 @@ namespace MyBackendApi.Repositories
         {
             return await _context.Questions
                 .Include(q => q.Answers)
+                    .ThenInclude(a => a.User)
+                    .ThenInclude(u => u.Occupation)
+                .Include(q => q.User)
+                    .ThenInclude(u => u.Occupation)
                 .FirstOrDefaultAsync(q => q.Id == id);
         }
     }
