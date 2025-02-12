@@ -2,9 +2,7 @@
 using MyBackedApi.DTOs.Forum.Responses;
 using MyBackedApi.Mappings;
 using MyBackedApi.Models;
-using MyBackendApi.Mappings;
 using MyBackendApi.Repositories;
-using System.Linq;
 
 namespace MyBackendApi.Services
 {
@@ -35,7 +33,7 @@ namespace MyBackendApi.Services
 
         public async Task<GetQuestionsResponse> GetAllQuestionsAsync(GetQuestionsRequest payload)
         {
-            var (questions, totalQuestions) =  await _questionRepository.GetAllQuestionsAsync(payload);
+            var (questions, totalQuestions) = await _questionRepository.GetAllQuestionsAsync(payload);
 
             var response = new GetQuestionsResponse
             {
@@ -47,7 +45,7 @@ namespace MyBackendApi.Services
 
         public async Task<GetQuestionResponse?> GetQuestionByIdAsync(Guid id)
         {
-            var question =  await _questionRepository.GetQuestionByIdAsync(id);
+            var question = await _questionRepository.GetQuestionByIdAsync(id);
             return question?.ToGetQuestionResponse();
         }
 
@@ -56,5 +54,29 @@ namespace MyBackendApi.Services
             var question = await _questionRepository.GetQuestionByIdAsync(id);
             return question?.ToGetQuestionDetailsResponse();
         }
+
+        public async Task<List<GetRelatedQuestionResponse>> GetRelatedQuestionsAsync(GetRelatedQuestionRequest payload)
+        {
+            var stopWords = new HashSet<string>
+            {
+                "how", "and", "is", "done", "the", "a", "an", "in", "on", "at", "to", "for", "with", "by", "of", "this", "that", "it", "from"
+            };
+
+            var searchWords = payload.Content
+                .Split(new[] { ' ', ',', '.', '!', '?' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(w => w.ToLower())
+                .Where(w => !stopWords.Contains(w))
+                .ToList();
+
+            var questions = await _questionRepository.GetRelatedQuestionsAsync(searchWords);
+
+            if (questions == null || !questions.Any())
+            {
+                return new List<GetRelatedQuestionResponse>();
+            }
+
+            return questions.Select(q => q.ToRelatedQuestionResponse()).ToList();
+        }
+
     }
 }
