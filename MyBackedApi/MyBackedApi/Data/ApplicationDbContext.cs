@@ -12,6 +12,8 @@ namespace MyBackedApi.Data
         public DbSet<Question> Questions { get; set; }
         public DbSet<Answer> Answers { get; set; }
         public DbSet<Occupation> Occupations { get; set; }
+        public DbSet<UserAuthToken> UserAuthTokens { get; set; }
+        public DbSet<ActivationCode> ActivationCodes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -54,7 +54,7 @@ namespace MyBackendApi.Services
                 Name = user.Name,
                 Surname = user.Surname,
                 Email = user.Email,
-                PasswordHash = user.Password,
+                Password = user.Password,
                 Role = user.Role,
                 OccupationId = user.OccupationId
             };

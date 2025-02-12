@@ -36,6 +36,13 @@ namespace MyBackendApi.Repositories
             return user;
         }
 
+        public async Task<User> GetUserAsync(string email, string password)
+        {
+            return await _context.Users
+                .Include(u => u.Occupation)
+                .FirstOrDefaultAsync(u => u.Email == email && u.Password == password);
+        }
+
 
         public async Task AddUserAsync(User user)
         {
@@ -64,6 +71,34 @@ namespace MyBackendApi.Repositories
         {
             await _context.Occupations.AddAsync(occupation);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<User> GetUserByEmailAsync(string email)
+        {
+            return await _context.Users
+                .FirstAsync(u => u.Email == email);
+        }
+
+        public async Task<Occupation> GetOccupationByName(string name)
+        {
+            return await _context.Occupations
+                .FirstAsync(o => o.Name == name);
+        }
+
+        public async Task<int> GetCodeForUser(string email)
+        {
+            var code = await _context.ActivationCodes.FirstOrDefaultAsync(ac => ac.Email == email);
+            return code.Code;
+        }
+
+        public async Task DeleteCodeForUser(string email)
+        {
+            var user = await _context.ActivationCodes.FirstOrDefaultAsync(ac => ac.Email == email);
+            if (user != null)
+            {
+                _context.ActivationCodes.Remove(user);
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }
