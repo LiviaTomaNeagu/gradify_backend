@@ -36,13 +36,6 @@ namespace MyBackendApi.Repositories
             return user;
         }
 
-        public async Task<User> GetUserAsync(string email, string password)
-        {
-            return await _context.Users
-                .Include(u => u.Occupation)
-                .FirstOrDefaultAsync(u => u.Email == email && u.Password == password);
-        }
-
 
         public async Task AddUserAsync(User user)
         {

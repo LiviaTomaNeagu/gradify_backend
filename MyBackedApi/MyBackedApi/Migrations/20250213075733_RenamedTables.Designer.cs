@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyBackedApi.Data;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MyBackedApi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250213075733_RenamedTables")]
+    partial class RenamedTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -24,7 +27,7 @@ namespace MyBackedApi.Migrations
 
             modelBuilder.Entity("MyBackedApi.Models.ActivationCode", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<Guid>("Uuid")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
@@ -38,7 +41,7 @@ namespace MyBackedApi.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.HasKey("Id");
+                    b.HasKey("Uuid");
 
                     b.ToTable("activation_codes", (string)null);
                 });
@@ -169,7 +172,7 @@ namespace MyBackedApi.Migrations
 
             modelBuilder.Entity("MyBackedApi.Models.UserAuthToken", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<Guid>("Uuid")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
@@ -189,7 +192,7 @@ namespace MyBackedApi.Migrations
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
-                    b.HasKey("Id");
+                    b.HasKey("Uuid");
 
                     b.HasIndex("UserId");
 

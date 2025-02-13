@@ -67,7 +67,7 @@ namespace MyBackendApi.Services
 
         public async Task<LoginResponse> LoginAsync(LoginRequest payload)
         {
-            User user = await userRepository.GetUserAsync(payload.Email, payload.PhoneNumber);
+            User user = await userRepository.GetUserByEmailAsync(payload.Email);
 
             VerifyPassword(payload, user);
 
@@ -144,7 +144,7 @@ namespace MyBackendApi.Services
         private async Task SaveRefreshTokenAsync(string refreshToken, Guid userId)
         {
             var userAuthToken = new UserAuthToken();
-            userAuthToken.Uuid = Guid.NewGuid();
+            userAuthToken.Id = Guid.NewGuid();
             userAuthToken.UserId = userId;
             userAuthToken.RefreshToken = refreshToken;
             userAuthToken.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(AppConfig.JwtSettings.RefreshTokenValidityDays);

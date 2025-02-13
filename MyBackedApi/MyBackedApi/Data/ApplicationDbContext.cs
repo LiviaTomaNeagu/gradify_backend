@@ -38,6 +38,10 @@ namespace MyBackedApi.Data
                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Occupation>().ToTable("occupations");
+
+            modelBuilder.Entity<UserAuthToken>().ToTable("user_auth_tokens");
+
+            modelBuilder.Entity<ActivationCode>().ToTable("activation_codes");
         }
 
     }

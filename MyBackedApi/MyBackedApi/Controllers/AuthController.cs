@@ -29,6 +29,7 @@ namespace MyBackendApi.Controllers
         [HttpPost("refresh-token")]
         public async Task<IActionResult> RefreshToken(RefreshTokenRequest refreshTokenRequest)
         {
+            //TODO TEST
             var tokenResponse = await authService.RefreshTokenAsync(refreshTokenRequest);
 
             return Ok(tokenResponse);
