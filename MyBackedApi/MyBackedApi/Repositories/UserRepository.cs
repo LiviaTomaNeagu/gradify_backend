@@ -22,6 +22,23 @@ namespace MyBackendApi.Repositories
                 .ToListAsync();
         }
 
+        public async Task<(IEnumerable<User> Mentors, int TotalUsers)> GetUsersWithOccupation(GetMentorsRequest payload)
+        {
+            var query = _context.Users
+                .Include(u => u.Occupation)
+                .Where(u => u.OccupationId == payload.AdminUser.OccupationId)
+                .OrderBy(u => u.Surname)
+                .AsQueryable();
+
+            var totalUsers = await query.CountAsync();
+
+            var skip = (payload.Page - 1) * payload.PageSize;
+            var users = await query.Skip(skip).Take(payload.PageSize)
+                .ToListAsync();
+
+            return (users, totalUsers);
+        }
+
         public async Task<User> GetUserByIdAsync(Guid id)
         {
             var user = await _context.Users
@@ -60,16 +77,21 @@ namespace MyBackendApi.Repositories
             }
         }
 
-        public async Task AddOccupationAsync(Occupation occupation)
+        public async Task<Guid> AddOccupationAsync(Occupation occupation)
         {
             await _context.Occupations.AddAsync(occupation);
             await _context.SaveChangesAsync();
+
+            return _context.Occupations
+                .OrderByDescending(o => o.CreatedAt)
+                .FirstOrDefault()
+                .Id;
         }
 
         public async Task<User> GetUserByEmailAsync(string email)
         {
             return await _context.Users
-                .FirstAsync(u => u.Email == email);
+                .FirstOrDefaultAsync(u => u.Email == email);
         }
 
         public async Task<Occupation> GetOccupationByName(string name)
@@ -78,20 +100,30 @@ namespace MyBackendApi.Repositories
                 .FirstAsync(o => o.Name == name);
         }
 
-        public async Task<int> GetCodeForUser(string email)
+        public async Task ApproveUserAsync(Guid id)
         {
-            var code = await _context.ActivationCodes.FirstOrDefaultAsync(ac => ac.Email == email);
-            return code.Code;
+            var user = await GetUserByIdAsync(id);
+
+            if (user == null)
+            {
+                throw new KeyNotFoundException("User not found.");
+            }
+
+            user.IsApproved = true;
+            await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteCodeForUser(string email)
+        public async Task ApproveUserAsync(string email)
         {
-            var user = await _context.ActivationCodes.FirstOrDefaultAsync(ac => ac.Email == email);
-            if (user != null)
+            var user = await GetUserByEmailAsync(email);
+
+            if (user == null)
             {
-                _context.ActivationCodes.Remove(user);
-                await _context.SaveChangesAsync();
+                throw new KeyNotFoundException("User not found.");
             }
+
+            user.IsApproved = true;
+            await _context.SaveChangesAsync();
         }
     }
 }

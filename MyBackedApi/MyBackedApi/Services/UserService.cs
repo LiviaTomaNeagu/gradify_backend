@@ -1,4 +1,5 @@
 ﻿using MyBackedApi.DTOs.User.Requests;
+using MyBackedApi.DTOs.User.Responses;
 using MyBackedApi.Models;
 using MyBackendApi.Models.Responses;
 using MyBackendApi.Repositories;
@@ -26,8 +27,32 @@ namespace MyBackendApi.Services
                 Email = user.Email,
                 Role = user.Role,
                 CompletedSteps = user.CompletedSteps,
-                OccupationName = user.Occupation.Name
+                OccupationName = user.Occupation.Name,
+                IsApproved = user.IsApproved
             }).ToList();
+        }
+
+        public async Task<GetMentorsResponse> GetMentorsAsync(GetMentorsRequest payload)
+        {
+            var usersResponse = await _userRepository.GetUsersWithOccupation(payload);
+            var mentors =  usersResponse.Mentors.Select(user => new GetUserResponse
+            {
+                Id = user.Id,
+                Name = user.Name,
+                Surname = user.Surname,
+                Username = user.Username,
+                Email = user.Email,
+                Role = user.Role,
+                CompletedSteps = user.CompletedSteps,
+                OccupationName = user.Occupation.Name,
+                IsApproved = user.IsApproved
+            }).ToList();
+
+            return new()
+            {
+                Mentors = mentors,
+                TotalUsers = usersResponse.TotalUsers
+            };
         }
 
         public async Task<GetUserResponse> GetUserByIdAsync(Guid id)
@@ -42,7 +67,8 @@ namespace MyBackendApi.Services
                 Email = user.Email,
                 Role = user.Role,
                 CompletedSteps = user.CompletedSteps,
-                OccupationName = user.Occupation.Name
+                OccupationName = user.Occupation.Name,
+                IsApproved = user.IsApproved
             };
         }
 
@@ -77,8 +103,6 @@ namespace MyBackendApi.Services
 
             existingUser.Name = user.Name;
             existingUser.Surname = user.Surname;
-            existingUser.Username = user.Username;
-            existingUser.Email = user.Email;
 
             await _userRepository.UpdateUserAsync(existingUser);
         }
@@ -94,14 +118,25 @@ namespace MyBackendApi.Services
             await _userRepository.DeleteUserAsync(id);
         }
 
-        public async Task AddOccupationAsync(AddOccupationRequest occupation)
+        public async Task<AddOccupationResponse> AddOccupationAsync(AddOccupationRequest occupation)
         {
             var occupationEntity = new Occupation
             {
-                Name = occupation.Name
+                Name = occupation.Name,
+                Domain = occupation.Domain
             };
 
-            await _userRepository.AddOccupationAsync(occupationEntity);
+            var occupationId =  await _userRepository.AddOccupationAsync(occupationEntity);
+
+            return new()
+            {
+                Id = occupationId
+            };
+        }
+
+        public async Task ApproveUserAsync(Guid userId)
+        {
+            await _userRepository.ApproveUserAsync(userId);
         }
     }
 }

@@ -5,6 +5,8 @@ using MyBackedApi.DTOs.Auth.Requests;
 using MyBackedApi.DTOs.Auth.Responses;
 using MyBackedApi.Enums;
 using MyBackedApi.Models;
+using MyBackedApi.Repositories;
+using MyBackedApi.Services;
 using MyBackendApi.Repositories;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -16,14 +18,20 @@ namespace MyBackendApi.Services
     {
         private UserRepository userRepository { get; set; }
         private UserAuthTokenRepository userAuthTokenRepository { get; set; }
+        private ActivationCodeRepository activationCodeRepository { get; set; }
+        private EmailService emailService { get; set; }
 
         public AuthService(
             UserRepository userRepository,
-            UserAuthTokenRepository userAuthTokenRepository
+            UserAuthTokenRepository userAuthTokenRepository,
+            ActivationCodeRepository activationCodeRepository,
+            EmailService emailService
             )
         {
             this.userRepository = userRepository;
             this.userAuthTokenRepository = userAuthTokenRepository;
+            this.activationCodeRepository = activationCodeRepository;
+            this.emailService = emailService;
         }
 
         public async Task RegisterUserAsync(RegisterUserRequest payload)
@@ -32,7 +40,7 @@ namespace MyBackendApi.Services
             {
                 var existingUserByEmail = await userRepository.GetUserByEmailAsync(payload.Email);
                 if (existingUserByEmail != null)
-                        throw new EmailAlreadyExistsException("Email already exists");
+                    throw new EmailAlreadyExistsException("Email already exists");
             }
             var user = new User
             {
@@ -41,28 +49,65 @@ namespace MyBackendApi.Services
                 Surname = payload.Surname,
                 Email = payload.Email,
                 Role = payload.Role,
-                IsApproved = payload.Role == RoleTypeEnum.STUDENT ? true : false
+                IsApproved = payload.Role == RoleTypeEnum.COORDINATOR ? true : false
             };
-            user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password, 10);
+            user.Password = BCrypt.Net.BCrypt.HashPassword(payload.Password, 10);
+
 
             if (payload.Role == RoleTypeEnum.STUDENT)
             {
+                var userDomain = payload.Email.Substring(payload.Email.Length - ("student.unitbv.com").Length);
+                if (userDomain != "student.unitbv.com")
+                    throw new OperationNotAllowedException("Your email doesn't match the desired behaviour!");
                 user.Occupation = await userRepository.GetOccupationByName("STUDENT");
                 user.OccupationId = user.Occupation.Id;
-                if(payload.Code != await userRepository.GetCodeForUser(payload.Email))
-                {
-                    await userRepository.DeleteCodeForUser(payload.Email);
-                    throw new OperationNotAllowedException("Invalid code");
-                }
+                await SendActivationCodeAsync(user.Email);
             }
 
-            if(payload.Role == RoleTypeEnum.COORDINATOR)
+            if (payload.Role == RoleTypeEnum.COORDINATOR)
             {
+                var userDomain = payload.Email.Substring(payload.Email.Length - ("unitbv.com").Length);
+                var possibleStudentDomain = payload.Email.Substring(payload.Email.Length - ("student.unitbv.com").Length - 1);
+                if (userDomain != "unitbv.com" || possibleStudentDomain == "student.unitbv.com")
+                    throw new OperationNotAllowedException("Your email doesn't match the desired behaviour!");
                 user.Occupation = await userRepository.GetOccupationByName("PROFESOR UNITBV");
                 user.OccupationId = user.Occupation.Id;
             }
 
             await userRepository.AddUserAsync(user);
+        }
+
+        public async Task SendActivationCodeAsync(string userEmail)
+        {
+            string activationCode;
+            activationCode = await activationCodeRepository.HasActiveValidationCode(userEmail);
+            if (string.IsNullOrEmpty(activationCode))
+            {
+                activationCode = new Random().Next(100000, 999999).ToString(); // Cod de 6 cifre
+                await activationCodeRepository.AddActivationCodeAsync(
+                    new ActivationCode
+                    {
+                        Email = userEmail,
+                        Code = activationCode,
+                        Expiration = DateTime.UtcNow.AddMinutes(5)
+                    });
+            }
+
+            await emailService.SendActivationEmailAsync(userEmail, activationCode);
+        }
+
+        public async Task<bool> VerifyActivationCodeAsync(string email, string code)
+        {
+            var activationCode = await activationCodeRepository.GetValidActivationCodeAsync(email, code);
+
+            if (activationCode != null)
+            {
+                await activationCodeRepository.DeleteActivationCodeAsync(activationCode);
+                await userRepository.ApproveUserAsync(email);
+                return true;
+            }
+
+            return false;
         }
 
         public async Task<LoginResponse> LoginAsync(LoginRequest payload)

@@ -1,6 +1,8 @@
 using Infrastructure.Config;
 using Microsoft.EntityFrameworkCore;
 using MyBackedApi.Data;
+using MyBackedApi.Repositories;
+using MyBackedApi.Services;
 using MyBackendApi.Repositories;
 using MyBackendApi.Services;
 
@@ -32,6 +34,7 @@ builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<QuestionService>();
 builder.Services.AddScoped<AnswerService>();
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<EmailService>();
 
 // Add repositories to the container.
 builder.Services.AddScoped<BaseRepository>();
@@ -39,6 +42,7 @@ builder.Services.AddScoped<UserRepository>();
 builder.Services.AddScoped<QuestionRepository>();
 builder.Services.AddScoped<AnswerRepository>();
 builder.Services.AddScoped<UserAuthTokenRepository>();
+builder.Services.AddScoped<ActivationCodeRepository>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

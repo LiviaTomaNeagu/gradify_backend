@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyBackedApi.DTOs.Auth.Requests;
 using MyBackedApi.DTOs.Auth.Responses;
+using MyBackedApi.Models;
 using MyBackendApi.Services;
 
 namespace MyBackendApi.Controllers
@@ -26,6 +27,14 @@ namespace MyBackendApi.Controllers
             return Ok(response);
         }
 
+        [HttpPost("register")]
+        public async Task<ActionResult<LoginResponse>> Register(RegisterUserRequest payload)
+        {
+            await authService.RegisterUserAsync(payload);
+
+            return Ok(new BaseResponseEmpty { Message = "Successfully registered" });
+        }
+
         [HttpPost("refresh-token")]
         public async Task<IActionResult> RefreshToken(RefreshTokenRequest refreshTokenRequest)
         {
@@ -44,6 +53,16 @@ namespace MyBackendApi.Controllers
             await authService.LogoutAsync(logoutRequest, currentUserId);
 
             return Ok(new BaseResponseEmpty { Message = "Successfully logged out" });
+        }
+
+        [HttpPost("verify-activation-code")]
+        public async Task<IActionResult> VerifyActivationCode([FromBody] VerifyCodeRequest request)
+        {
+            if (await authService.VerifyActivationCodeAsync(request.Email, request.Code))
+            {
+                return Ok(new { Message = "Activation successful. You can now log in." });
+            }
+            return BadRequest(new { Message = "Invalid activation code." });
         }
 
 

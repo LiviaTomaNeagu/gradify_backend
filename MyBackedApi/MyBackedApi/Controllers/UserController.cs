@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MyBackedApi.DTOs.User.Requests;
+using MyBackedApi.DTOs.User.Responses;
 using MyBackendApi.Models.Responses;
 using MyBackendApi.Services;
 
@@ -30,6 +31,12 @@ namespace MyBackendApi.Controllers
             return await _userService.GetAllUsersAsync();
         }
 
+        [HttpGet("get-mentors")]
+        public async Task<GetMentorsResponse> GetMentors([FromBody]GetMentorsRequest payload)
+        {
+            return await _userService.GetMentorsAsync(payload);
+        }
+
         [HttpPost("add-user")]
         public async Task<IActionResult> AddUser([FromBody] AddUserRequest request)
         {
@@ -56,6 +63,20 @@ namespace MyBackendApi.Controllers
         {
             await _userService.AddOccupationAsync(request);
             return Ok("Success!");
+        }
+
+        [HttpPut("approve-user")]
+        public async Task<IActionResult> ApproveUser([FromBody] Guid userId)
+        {
+            await _userService.ApproveUserAsync(userId);
+            return Ok("Success!");
+        }
+
+        [HttpDelete("decline-user")]
+        public async Task<IActionResult> DeclineUser([FromBody] Guid userId)
+        {
+            await _userService.DeleteUserAsync(userId);
+            return Ok("User not approved!");
         }
     }
 }

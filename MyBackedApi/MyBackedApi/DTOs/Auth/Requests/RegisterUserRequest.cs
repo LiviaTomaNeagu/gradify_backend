@@ -10,6 +10,6 @@ namespace MyBackedApi.DTOs.Auth.Requests
         public string Password { get; set; }
         public RoleTypeEnum Role { get; set; }
 
-        public int Code { get; set; }
+        public string Code { get; set; }
     }
 }
