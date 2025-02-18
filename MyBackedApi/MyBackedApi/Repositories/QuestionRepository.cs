@@ -69,5 +69,15 @@ namespace MyBackendApi.Repositories
             return question;
         }
 
+        public async Task<List<Question>> GetRelatedQuestionsAsync(List<string>? searchWords)
+        {
+            return await _context.Questions
+                .Where(q => searchWords.Any(word => q.Content.ToLower().Contains(word)))
+                .Include(q => q.Answers)
+                .OrderByDescending(q => q.CreatedAt)
+                .ToListAsync();
+        }
+
+
     }
 }   

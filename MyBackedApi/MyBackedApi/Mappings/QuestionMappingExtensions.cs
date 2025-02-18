@@ -44,5 +44,16 @@ namespace MyBackedApi.Mappings
             };
         }
 
+        public static GetRelatedQuestionResponse ToRelatedQuestionResponse(this Question question)
+        {
+            return new GetRelatedQuestionResponse
+            {
+                Id = question.Id,
+                Title = question.Title,
+                AnswersCount = question.Answers?.Count ?? 0,
+                Topic = question.Topic
+            };
+        }
+
     }
 }

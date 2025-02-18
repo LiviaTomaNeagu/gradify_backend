@@ -61,5 +61,12 @@ namespace MyBackendApi.Controllers
             var answer = await _answerService.AddAnswerAsync(questionId, request);
             return CreatedAtAction(nameof(AddAnswer), new { questionId }, new {answer.Id, answer.QuestionId, answer.Content, answer.CreatedAt, answer.UserId} );
         }
+
+        [HttpPost("get-related-questions")]
+        public async Task<List<GetRelatedQuestionResponse>> GetRelatedQuestions([FromBody] GetRelatedQuestionRequest payload)
+        {
+            var questions = await _questionService.GetRelatedQuestionsAsync(payload);
+            return questions;
+        }
     }
 }
