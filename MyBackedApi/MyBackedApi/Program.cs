@@ -1,4 +1,5 @@
 using Infrastructure.Config;
+using Infrastructure.Middlewares;
 using Microsoft.EntityFrameworkCore;
 using MyBackedApi.Data;
 using MyBackedApi.Repositories;
@@ -72,6 +73,8 @@ if (app.Environment.IsDevelopment())
         c.RoutePrefix = string.Empty;
     });
 }
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseCors("AllowAngularApp");
 app.UseHttpsRedirection();

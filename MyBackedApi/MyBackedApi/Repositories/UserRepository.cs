@@ -94,6 +94,12 @@ namespace MyBackendApi.Repositories
                 .FirstOrDefaultAsync(u => u.Email == email);
         }
 
+        public async Task<User> GetActiveUserByEmail(string email)
+        {
+            return await _context.Users
+               .FirstOrDefaultAsync(u => u.Email == email && u.IsApproved == true);
+        }
+
         public async Task<Occupation> GetOccupationByName(string name)
         {
             return await _context.Occupations

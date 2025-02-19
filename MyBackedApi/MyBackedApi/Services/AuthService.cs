@@ -40,7 +40,14 @@ namespace MyBackendApi.Services
             {
                 var existingUserByEmail = await userRepository.GetUserByEmailAsync(payload.Email);
                 if (existingUserByEmail != null)
-                    throw new EmailAlreadyExistsException("Email already exists");
+                    if (existingUserByEmail.IsApproved == true)
+                        throw new EmailAlreadyExistsException("Email already exists");
+                    else
+                    {
+                        if(payload.Role == RoleTypeEnum.STUDENT)
+                            await SendActivationCodeAsync(existingUserByEmail.Email);
+                        return;
+                    }
             }
             var user = new User
             {
@@ -56,6 +63,9 @@ namespace MyBackendApi.Services
 
             if (payload.Role == RoleTypeEnum.STUDENT)
             {
+                if(payload.Email.Length <= ("@student.unitbv.com").Length)
+                    throw new OperationNotAllowedException("Your email doesn't match the desired behaviour!");
+
                 var userDomain = payload.Email.Substring(payload.Email.Length - ("student.unitbv.com").Length);
                 if (userDomain != "student.unitbv.com")
                     throw new OperationNotAllowedException("Your email doesn't match the desired behaviour!");
@@ -112,7 +122,7 @@ namespace MyBackendApi.Services
 
         public async Task<LoginResponse> LoginAsync(LoginRequest payload)
         {
-            User user = await userRepository.GetUserByEmailAsync(payload.Email);
+            User user = await userRepository.GetActiveUserByEmail(payload.Email);
 
             VerifyPassword(payload, user);
 

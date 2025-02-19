@@ -28,9 +28,9 @@ namespace MyBackendApi.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<ActionResult<LoginResponse>> Register(RegisterUserRequest payload)
+        public async Task<IActionResult> Register(RegisterUserRequest payload)
         {
-            await authService.RegisterUserAsync(payload);
+           await authService.RegisterUserAsync(payload);
 
             return Ok(new BaseResponseEmpty { Message = "Successfully registered" });
         }
@@ -64,6 +64,15 @@ namespace MyBackendApi.Controllers
             }
             return BadRequest(new { Message = "Invalid activation code." });
         }
+
+        [HttpPost("resend-activation-code")]
+        public async Task<IActionResult> ResendActivationCode([FromBody] string email)
+        {
+            await authService.SendActivationCodeAsync(email);
+
+            return Ok(new BaseResponseEmpty { Message = "Successfully registered" });
+        }
+
 
 
     }
