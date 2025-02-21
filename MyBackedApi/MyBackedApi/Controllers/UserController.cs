@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Infrastructure.Base;
+using Microsoft.AspNetCore.Mvc;
 using MyBackedApi.DTOs.User.Requests;
 using MyBackedApi.DTOs.User.Responses;
 using MyBackendApi.Models.Responses;
@@ -8,7 +9,7 @@ namespace MyBackendApi.Controllers
 {
     [ApiController]
     [Route("api/users")]
-    public class UserController : ControllerBase
+    public class UserController : BaseApiController
     {
         private readonly UserService _userService;
 
@@ -31,10 +32,21 @@ namespace MyBackendApi.Controllers
             return await _userService.GetAllUsersAsync();
         }
 
-        [HttpGet("get-mentors")]
+        [HttpPost("get-mentors")]
         public async Task<GetMentorsResponse> GetMentors([FromBody]GetMentorsRequest payload)
         {
             return await _userService.GetMentorsAsync(payload);
+        }
+
+        [HttpGet("get-current-user-details")]
+        public async Task<ActionResult<GetCurrentUserDetailsResponse>> GetCurrentUserDetails()
+        {
+            var userId = GetUserIdFromToken();
+
+            var results = await _userService.GetCurrentUserDetailsAsync(userId);
+
+            return Ok(results);
+
         }
 
         [HttpPost("add-user")]

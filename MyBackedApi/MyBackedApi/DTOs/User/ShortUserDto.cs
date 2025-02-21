@@ -1,18 +1,19 @@
 ﻿using MyBackedApi.Enums;
 using MyBackedApi.Models;
 
-namespace MyBackendApi.Models.Responses
+namespace MyBackedApi.DTOs.User
 {
-    public class GetUserResponse
+    public class ShortUserDto
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
         public string Surname { get; set; }
         public string Email { get; set; }
         public RoleTypeEnum Role { get; set; }
-        public int CompletedSteps { get; set; }
-        public string OccupationName { get; set; }
         public bool IsApproved { get; set; }
+
+        public Guid? OccupationId { get; set; }
+        public Occupation Occupation { get; set; }
+
     }
 }
-

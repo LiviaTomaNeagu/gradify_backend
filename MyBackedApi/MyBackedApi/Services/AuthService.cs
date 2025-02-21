@@ -51,7 +51,6 @@ namespace MyBackendApi.Services
             }
             var user = new User
             {
-                Username = payload.Email,
                 Name = payload.Name,
                 Surname = payload.Surname,
                 Email = payload.Email,

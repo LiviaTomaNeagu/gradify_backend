@@ -1,4 +1,5 @@
-﻿using MyBackedApi.DTOs.User.Requests;
+﻿using Infrastructure.Exceptions;
+using MyBackedApi.DTOs.User.Requests;
 using MyBackedApi.DTOs.User.Responses;
 using MyBackedApi.Models;
 using MyBackendApi.Models.Responses;
@@ -23,7 +24,6 @@ namespace MyBackendApi.Services
                 Id = user.Id,
                 Name = user.Name,
                 Surname = user.Surname,
-                Username = user.Username,
                 Email = user.Email,
                 Role = user.Role,
                 CompletedSteps = user.CompletedSteps,
@@ -40,7 +40,6 @@ namespace MyBackendApi.Services
                 Id = user.Id,
                 Name = user.Name,
                 Surname = user.Surname,
-                Username = user.Username,
                 Email = user.Email,
                 Role = user.Role,
                 CompletedSteps = user.CompletedSteps,
@@ -63,7 +62,6 @@ namespace MyBackendApi.Services
                 Id = user.Id,
                 Name = user.Name,
                 Surname = user.Surname,
-                Username = user.Username,
                 Email = user.Email,
                 Role = user.Role,
                 CompletedSteps = user.CompletedSteps,
@@ -76,7 +74,6 @@ namespace MyBackendApi.Services
         {
             var userEntity = new User
             {
-                Username = user.Username,
                 Name = user.Name,
                 Surname = user.Surname,
                 Email = user.Email,
@@ -137,6 +134,28 @@ namespace MyBackendApi.Services
         public async Task ApproveUserAsync(Guid userId)
         {
             await _userRepository.ApproveUserAsync(userId);
+        }
+
+        public async Task<GetCurrentUserDetailsResponse> GetCurrentUserDetailsAsync(Guid userId)
+        {
+            var currentUser = await _userRepository.GetUserByIdAsync(userId);
+
+            if (currentUser == null)
+                throw new ResourceMissingException(("The desired user does not exist"));
+
+            var result = new GetCurrentUserDetailsResponse()
+            {
+                Id = currentUser.Id,
+                Email = currentUser.Email,
+                Name = currentUser.Name,
+                Surname = currentUser.Surname,
+                Role = currentUser.Role,
+                OccupationId = currentUser.OccupationId,
+                Occupation = currentUser.Occupation
+            };
+
+            return result;
+
         }
     }
 }
