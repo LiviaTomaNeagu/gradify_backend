@@ -65,11 +65,11 @@ namespace MyBackendApi.Services
 
             if (payload.Role == RoleTypeEnum.STUDENT)
             {
-                if(payload.Email.Length <= ("@student.unitbv.com").Length)
+                if(payload.Email.Length <= ("@student.unitbv.ro").Length)
                     throw new OperationNotAllowedException("Your email doesn't match the desired behaviour!");
 
-                var userDomain = payload.Email.Substring(payload.Email.Length - ("student.unitbv.com").Length);
-                if (userDomain != "student.unitbv.com")
+                var userDomain = payload.Email.Substring(payload.Email.Length - ("student.unitbv.ro").Length);
+                if (userDomain != "student.unitbv.ro")
                     throw new OperationNotAllowedException("Your email doesn't match the desired behaviour!");
                 user.Occupation = await occupationRepository.GetOccupationByName("STUDENT");
                 user.OccupationId = user.Occupation.Id;
@@ -78,12 +78,22 @@ namespace MyBackendApi.Services
 
             if (payload.Role == RoleTypeEnum.COORDINATOR)
             {
-                var userDomain = payload.Email.Substring(payload.Email.Length - ("unitbv.com").Length);
-                var possibleStudentDomain = payload.Email.Substring(payload.Email.Length - ("student.unitbv.com").Length - 1);
-                if (userDomain != "unitbv.com" || possibleStudentDomain == "student.unitbv.com")
+                var userDomain = payload.Email.Substring(payload.Email.Length - ("unitbv.ro").Length);
+                var possibleStudentDomain = payload.Email.Substring(payload.Email.Length - ("student.unitbv.ro").Length - 1);
+                if (userDomain != "unitbv.ro" || possibleStudentDomain == "student.unitbv.ro")
                     throw new OperationNotAllowedException("Your email doesn't match the desired behaviour!");
                 user.Occupation = await occupationRepository.GetOccupationByName("PROFESOR UNITBV");
                 user.OccupationId = user.Occupation.Id;
+            }
+
+            if(payload.Role == RoleTypeEnum.MENTOR)
+            {
+                var domain = payload.Email.Substring(payload.Email.IndexOf('@') + 1);
+                var existingOccupation = await occupationRepository.GetOccupationByDomain(domain);
+                if (existingOccupation == null)
+                    throw new OperationNotAllowedException("There is no institution that corresponds to your email address.");
+
+                user.OccupationId = existingOccupation.Id;
             }
 
             await userRepository.AddUserAsync(user);

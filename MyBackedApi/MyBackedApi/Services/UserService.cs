@@ -52,7 +52,10 @@ namespace MyBackendApi.Services
                 CompletedSteps = user.CompletedSteps,
                 OccupationName = user.Occupation.Name,
                 IsApproved = user.IsApproved
-            }).ToList();
+            })
+                .OrderBy(u => u.IsApproved)
+                .ToList();
+
 
             return new()
             {
@@ -249,6 +252,7 @@ namespace MyBackendApi.Services
 
             return new GetMyCompanyResponse
             {
+                Id = occupation.Id,
                 Name = occupation.Name,
                 Address = occupation.Address,
                 City = occupation.City,

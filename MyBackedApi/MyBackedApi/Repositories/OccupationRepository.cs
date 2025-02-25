@@ -29,6 +29,12 @@ namespace MyBackedApi.Repositories
                 .FirstAsync(o => o.Name == name);
         }
 
+        public async Task<Occupation> GetOccupationByDomain(string domain)
+        {
+            return await _context.Occupations
+                .FirstAsync(o => o.Domain == domain);
+        }
+
         public async Task<int> GetNumberOfResponsesAsync(Guid? occupationId)
         {
             var number = await _context.Answers

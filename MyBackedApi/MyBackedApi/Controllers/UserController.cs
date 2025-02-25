@@ -84,25 +84,34 @@ namespace MyBackendApi.Controllers
             return Ok("Success!");
         }
 
-        [HttpPut("add-occupation")]
+        [HttpPut("update-occupation")]
         public async Task<IActionResult> UpdateOccupation([FromBody] UpdateOccupationRequest request)
         {
             await _userService.UpdateOccupationAsync(request);
-            return Ok("Success!");
+            return Ok(new BaseResponseEmpty()
+            {
+                Message = "Success!"
+            });
         }
 
-        [HttpPut("approve-user")]
-        public async Task<IActionResult> ApproveUser([FromBody] Guid userId)
+        [HttpPut("approve-user/{userId}")]
+        public async Task<IActionResult> ApproveUser([FromRoute] Guid userId)
         {
             await _userService.ApproveUserAsync(userId);
-            return Ok("Success!");
+            return Ok(new BaseResponseEmpty()
+            {
+                Message = "Success!"
+            });
         }
 
-        [HttpDelete("decline-user")]
-        public async Task<IActionResult> DeclineUser([FromBody] Guid userId)
+        [HttpDelete("decline-user/{userId}")]
+        public async Task<IActionResult> DeclineUser([FromRoute] Guid userId)
         {
             await _userService.DeleteUserAsync(userId);
-            return Ok("User not approved!");
+            return Ok(new BaseResponseEmpty()
+            {
+                Message = "User declined!"
+            });
         }
 
         [HttpGet("get-my-company")]
