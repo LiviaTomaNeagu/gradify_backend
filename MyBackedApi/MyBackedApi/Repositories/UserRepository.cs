@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MyBackedApi.Data;
 using MyBackedApi.DTOs.User.Requests;
+using MyBackedApi.Enums;
 using MyBackedApi.Models;
 using MyBackendApi.Models.Responses;
 
@@ -20,6 +21,40 @@ namespace MyBackendApi.Repositories
             return await _context.Users
                 .Include(u => u.Occupation)
                 .ToListAsync();
+        }
+
+        public async Task<(IEnumerable<User> Mentors, int TotalUsers)> GetUsersWithOccupation(GetMentorsRequest payload)
+        {
+            var query = _context.Users
+                .Include(u => u.Occupation)
+                .Where(u => u.OccupationId == payload.AdminUser.OccupationId)
+                .OrderBy(u => u.Surname)
+                .AsQueryable();
+
+            var totalUsers = await query.CountAsync();
+
+            var skip = (payload.Page - 1) * payload.PageSize;
+            var users = await query.Skip(skip).Take(payload.PageSize)
+                .ToListAsync();
+
+            return (users, totalUsers);
+        }
+
+        public async Task<(IEnumerable<User> Admins, int TotalUsers)> GetAdminsCorporateAsync(GetAdminsCorporateRequest payload)
+        {
+            var query = _context.Users
+                .Include(u => u.Occupation)
+                .Where(u => u.Role == RoleTypeEnum.ADMIN_CORPORATE)
+                .OrderBy(u => u.Surname)
+                .AsQueryable();
+
+            var totalUsers = await query.CountAsync();
+
+            var skip = (payload.Page - 1) * payload.PageSize;
+            var users = await query.Skip(skip).Take(payload.PageSize)
+                .ToListAsync();
+
+            return (users, totalUsers);
         }
 
         public async Task<User> GetUserByIdAsync(Guid id)
@@ -60,9 +95,43 @@ namespace MyBackendApi.Repositories
             }
         }
 
-        public async Task AddOccupationAsync(Occupation occupation)
+        public async Task<User> GetUserByEmailAsync(string email)
         {
-            await _context.Occupations.AddAsync(occupation);
+            return await _context.Users
+                .FirstOrDefaultAsync(u => u.Email == email);
+        }
+
+        public async Task<User> GetActiveUserByEmail(string email)
+        {
+            return await _context.Users
+               .FirstOrDefaultAsync(u => u.Email == email && u.IsApproved == true);
+        }
+
+        
+
+        public async Task ApproveUserAsync(Guid id)
+        {
+            var user = await GetUserByIdAsync(id);
+
+            if (user == null)
+            {
+                throw new KeyNotFoundException("User not found.");
+            }
+
+            user.IsApproved = true;
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task ApproveUserAsync(string email)
+        {
+            var user = await GetUserByEmailAsync(email);
+
+            if (user == null)
+            {
+                throw new KeyNotFoundException("User not found.");
+            }
+
+            user.IsApproved = true;
             await _context.SaveChangesAsync();
         }
     }

@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Infrastructure.Base;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using MyBackedApi.DTOs.User.Requests;
+using MyBackedApi.DTOs.User.Responses;
 using MyBackendApi.Models.Responses;
 using MyBackendApi.Services;
 
@@ -7,7 +10,7 @@ namespace MyBackendApi.Controllers
 {
     [ApiController]
     [Route("api/users")]
-    public class UserController : ControllerBase
+    public class UserController : BaseApiController
     {
         private readonly UserService _userService;
 
@@ -28,6 +31,29 @@ namespace MyBackendApi.Controllers
         public async Task<List<GetUserResponse>> GetAllUsers()
         {
             return await _userService.GetAllUsersAsync();
+        }
+
+        [HttpPost("get-mentors")]
+        public async Task<GetUsersResponse> GetMentors([FromBody]GetMentorsRequest payload)
+        {
+            return await _userService.GetMentorsAsync(payload);
+        }
+
+        [HttpPost("get-admins-corporate")]
+        public async Task<GetUsersResponse> GetAdminsCorporate([FromBody] GetAdminsCorporateRequest payload)
+        {
+            return await _userService.GetAdminsCorporateAsync(payload);
+        }
+
+        [HttpGet("get-current-user-details")]
+        public async Task<ActionResult<GetCurrentUserDetailsResponse>> GetCurrentUserDetails()
+        {
+            var userId = GetUserIdFromToken();
+
+            var results = await _userService.GetCurrentUserDetailsAsync(userId);
+
+            return Ok(results);
+
         }
 
         [HttpPost("add-user")]
@@ -56,6 +82,44 @@ namespace MyBackendApi.Controllers
         {
             await _userService.AddOccupationAsync(request);
             return Ok("Success!");
+        }
+
+        [HttpPut("update-occupation")]
+        public async Task<IActionResult> UpdateOccupation([FromBody] UpdateOccupationRequest request)
+        {
+            await _userService.UpdateOccupationAsync(request);
+            return Ok(new BaseResponseEmpty()
+            {
+                Message = "Success!"
+            });
+        }
+
+        [HttpPut("approve-user/{userId}")]
+        public async Task<IActionResult> ApproveUser([FromRoute] Guid userId)
+        {
+            await _userService.ApproveUserAsync(userId);
+            return Ok(new BaseResponseEmpty()
+            {
+                Message = "Success!"
+            });
+        }
+
+        [HttpDelete("decline-user/{userId}")]
+        public async Task<IActionResult> DeclineUser([FromRoute] Guid userId)
+        {
+            await _userService.DeleteUserAsync(userId);
+            return Ok(new BaseResponseEmpty()
+            {
+                Message = "User declined!"
+            });
+        }
+
+        [HttpGet("get-my-company")]
+        public async Task<ActionResult<GetMyCompanyResponse>> GetMyCompany()
+        {
+            var userId = GetUserIdFromToken();
+            var response = await _userService.GetCompanyAsync(userId);
+            return Ok(response);
         }
     }
 }

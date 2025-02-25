@@ -12,6 +12,8 @@ namespace MyBackedApi.Data
         public DbSet<Question> Questions { get; set; }
         public DbSet<Answer> Answers { get; set; }
         public DbSet<Occupation> Occupations { get; set; }
+        public DbSet<UserAuthToken> UserAuthTokens { get; set; }
+        public DbSet<ActivationCode> ActivationCodes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -36,6 +38,10 @@ namespace MyBackedApi.Data
                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Occupation>().ToTable("occupations");
+
+            modelBuilder.Entity<UserAuthToken>().ToTable("user_auth_tokens");
+
+            modelBuilder.Entity<ActivationCode>().ToTable("activation_codes");
         }
 
     }

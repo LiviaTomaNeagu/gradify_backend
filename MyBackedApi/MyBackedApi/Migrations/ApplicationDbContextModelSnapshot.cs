@@ -22,6 +22,31 @@ namespace MyBackedApi.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("MyBackedApi.Models.ActivationCode", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("Expiration")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("activation_codes", (string)null);
+                });
+
             modelBuilder.Entity("MyBackedApi.Models.Answer", b =>
                 {
                     b.Property<Guid>("Id")
@@ -45,6 +70,8 @@ namespace MyBackedApi.Migrations
 
                     b.HasIndex("QuestionId");
 
+                    b.HasIndex("UserId");
+
                     b.ToTable("answers", (string)null);
                 });
 
@@ -54,8 +81,36 @@ namespace MyBackedApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("AdminEmail")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("AdminName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("AdminSurname")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Country")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Domain")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -112,6 +167,9 @@ namespace MyBackedApi.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<bool>("IsApproved")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
@@ -119,7 +177,7 @@ namespace MyBackedApi.Migrations
                     b.Property<Guid?>("OccupationId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("PasswordHash")
+                    b.Property<string>("Password")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -130,15 +188,40 @@ namespace MyBackedApi.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Username")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.HasKey("Id");
 
                     b.HasIndex("OccupationId");
 
                     b.ToTable("users", (string)null);
+                });
+
+            modelBuilder.Entity("MyBackedApi.Models.UserAuthToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsValid")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("RefreshToken")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("RefreshTokenExpiryTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("user_auth_tokens", (string)null);
                 });
 
             modelBuilder.Entity("MyBackedApi.Models.Answer", b =>
@@ -148,6 +231,14 @@ namespace MyBackedApi.Migrations
                         .HasForeignKey("QuestionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("MyBackedApi.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("MyBackedApi.Models.Question", b =>
@@ -169,6 +260,17 @@ namespace MyBackedApi.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Occupation");
+                });
+
+            modelBuilder.Entity("MyBackedApi.Models.UserAuthToken", b =>
+                {
+                    b.HasOne("MyBackedApi.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("MyBackedApi.Models.Question", b =>
