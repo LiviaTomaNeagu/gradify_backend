@@ -1,4 +1,5 @@
 ﻿using Infrastructure.Base;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyBackedApi.DTOs.User.Requests;
 using MyBackedApi.DTOs.User.Responses;
@@ -33,9 +34,15 @@ namespace MyBackendApi.Controllers
         }
 
         [HttpPost("get-mentors")]
-        public async Task<GetMentorsResponse> GetMentors([FromBody]GetMentorsRequest payload)
+        public async Task<GetUsersResponse> GetMentors([FromBody]GetMentorsRequest payload)
         {
             return await _userService.GetMentorsAsync(payload);
+        }
+
+        [HttpPost("get-admins-corporate")]
+        public async Task<GetUsersResponse> GetAdminsCorporate([FromBody] GetAdminsCorporateRequest payload)
+        {
+            return await _userService.GetAdminsCorporateAsync(payload);
         }
 
         [HttpGet("get-current-user-details")]
@@ -77,6 +84,13 @@ namespace MyBackendApi.Controllers
             return Ok("Success!");
         }
 
+        [HttpPut("add-occupation")]
+        public async Task<IActionResult> UpdateOccupation([FromBody] UpdateOccupationRequest request)
+        {
+            await _userService.UpdateOccupationAsync(request);
+            return Ok("Success!");
+        }
+
         [HttpPut("approve-user")]
         public async Task<IActionResult> ApproveUser([FromBody] Guid userId)
         {
@@ -89,6 +103,14 @@ namespace MyBackendApi.Controllers
         {
             await _userService.DeleteUserAsync(userId);
             return Ok("User not approved!");
+        }
+
+        [HttpGet("get-my-company")]
+        public async Task<ActionResult<GetMyCompanyResponse>> GetMyCompany()
+        {
+            var userId = GetUserIdFromToken();
+            var response = await _userService.GetCompanyAsync(userId);
+            return Ok(response);
         }
     }
 }

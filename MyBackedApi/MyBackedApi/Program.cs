@@ -47,6 +47,7 @@ builder.Services.AddScoped<QuestionRepository>();
 builder.Services.AddScoped<AnswerRepository>();
 builder.Services.AddScoped<UserAuthTokenRepository>();
 builder.Services.AddScoped<ActivationCodeRepository>();
+builder.Services.AddScoped<OccupationRepository>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

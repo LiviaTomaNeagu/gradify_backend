@@ -2,9 +2,9 @@
 
 namespace MyBackedApi.DTOs.User.Responses
 {
-    public class GetMentorsResponse
+    public class GetUsersResponse
     {
-        public List<GetUserResponse> Mentors { get; set; }
+        public List<GetUserResponse> Users { get; set; }
         public int TotalUsers { get; set; }
     }
 }

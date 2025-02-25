@@ -17,18 +17,21 @@ namespace MyBackendApi.Services
     public class AuthService
     {
         private UserRepository userRepository { get; set; }
+        private OccupationRepository occupationRepository { get; set; }
         private UserAuthTokenRepository userAuthTokenRepository { get; set; }
         private ActivationCodeRepository activationCodeRepository { get; set; }
         private EmailService emailService { get; set; }
 
         public AuthService(
             UserRepository userRepository,
+            OccupationRepository occupationRepository,
             UserAuthTokenRepository userAuthTokenRepository,
             ActivationCodeRepository activationCodeRepository,
             EmailService emailService
             )
         {
             this.userRepository = userRepository;
+            this.occupationRepository = occupationRepository;
             this.userAuthTokenRepository = userAuthTokenRepository;
             this.activationCodeRepository = activationCodeRepository;
             this.emailService = emailService;
@@ -68,7 +71,7 @@ namespace MyBackendApi.Services
                 var userDomain = payload.Email.Substring(payload.Email.Length - ("student.unitbv.com").Length);
                 if (userDomain != "student.unitbv.com")
                     throw new OperationNotAllowedException("Your email doesn't match the desired behaviour!");
-                user.Occupation = await userRepository.GetOccupationByName("STUDENT");
+                user.Occupation = await occupationRepository.GetOccupationByName("STUDENT");
                 user.OccupationId = user.Occupation.Id;
                 await SendActivationCodeAsync(user.Email);
             }
@@ -79,7 +82,7 @@ namespace MyBackendApi.Services
                 var possibleStudentDomain = payload.Email.Substring(payload.Email.Length - ("student.unitbv.com").Length - 1);
                 if (userDomain != "unitbv.com" || possibleStudentDomain == "student.unitbv.com")
                     throw new OperationNotAllowedException("Your email doesn't match the desired behaviour!");
-                user.Occupation = await userRepository.GetOccupationByName("PROFESOR UNITBV");
+                user.Occupation = await occupationRepository.GetOccupationByName("PROFESOR UNITBV");
                 user.OccupationId = user.Occupation.Id;
             }
 

@@ -1,15 +1,12 @@
-﻿namespace MyBackedApi.Models
+﻿namespace MyBackedApi.DTOs.User.Requests
 {
-    public class Occupation
+    public class UpdateOccupationRequest
     {
-        public Guid Id { get; set; }
+        public Guid OccupationId { get; set; }
         public string Name { get; set; }
-        public string Domain { get; set; }
         public string Address { get; set; }
         public string City { get; set; }
         public string Country { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;  
-        public string AdminEmail { get; set; }
         public string AdminName { get; set; }
         public string AdminSurname { get; set; }
     }

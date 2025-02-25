@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MyBackedApi.Data;
 using MyBackedApi.DTOs.User.Requests;
+using MyBackedApi.Enums;
 using MyBackedApi.Models;
 using MyBackendApi.Models.Responses;
 
@@ -27,6 +28,23 @@ namespace MyBackendApi.Repositories
             var query = _context.Users
                 .Include(u => u.Occupation)
                 .Where(u => u.OccupationId == payload.AdminUser.OccupationId)
+                .OrderBy(u => u.Surname)
+                .AsQueryable();
+
+            var totalUsers = await query.CountAsync();
+
+            var skip = (payload.Page - 1) * payload.PageSize;
+            var users = await query.Skip(skip).Take(payload.PageSize)
+                .ToListAsync();
+
+            return (users, totalUsers);
+        }
+
+        public async Task<(IEnumerable<User> Admins, int TotalUsers)> GetAdminsCorporateAsync(GetAdminsCorporateRequest payload)
+        {
+            var query = _context.Users
+                .Include(u => u.Occupation)
+                .Where(u => u.Role == RoleTypeEnum.ADMIN_CORPORATE)
                 .OrderBy(u => u.Surname)
                 .AsQueryable();
 
@@ -77,17 +95,6 @@ namespace MyBackendApi.Repositories
             }
         }
 
-        public async Task<Guid> AddOccupationAsync(Occupation occupation)
-        {
-            await _context.Occupations.AddAsync(occupation);
-            await _context.SaveChangesAsync();
-
-            return _context.Occupations
-                .OrderByDescending(o => o.CreatedAt)
-                .FirstOrDefault()
-                .Id;
-        }
-
         public async Task<User> GetUserByEmailAsync(string email)
         {
             return await _context.Users
@@ -100,11 +107,7 @@ namespace MyBackendApi.Repositories
                .FirstOrDefaultAsync(u => u.Email == email && u.IsApproved == true);
         }
 
-        public async Task<Occupation> GetOccupationByName(string name)
-        {
-            return await _context.Occupations
-                .FirstAsync(o => o.Name == name);
-        }
+        
 
         public async Task ApproveUserAsync(Guid id)
         {
