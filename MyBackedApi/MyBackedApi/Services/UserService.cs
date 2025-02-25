@@ -266,5 +266,27 @@ namespace MyBackendApi.Services
             };
         }
 
+        public async Task<GetUsersResponse> GetUsersForRoleAsync(GetUsersForRoleRequest payload)
+        {
+            var usersResponse = await _userRepository.GetUsersByRole(payload);
+            var users = usersResponse.Users.Select(user => new GetUserResponse
+            {
+                Id = user.Id,
+                Name = user.Name,
+                Surname = user.Surname,
+                Email = user.Email,
+                Role = user.Role,
+                CompletedSteps = user.CompletedSteps,
+                OccupationName = user.Occupation.Name,
+                IsApproved = user.IsApproved
+            }).ToList();
+
+
+            return new()
+            {
+                Users = users,
+                TotalUsers = usersResponse.TotalUsers
+            };
+        }
     }
 }

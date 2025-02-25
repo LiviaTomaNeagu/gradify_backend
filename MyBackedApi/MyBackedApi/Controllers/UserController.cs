@@ -33,6 +33,12 @@ namespace MyBackendApi.Controllers
             return await _userService.GetAllUsersAsync();
         }
 
+        [HttpPost("get-users-for-role")]
+        public async Task<GetUsersResponse> GetUsersForRole([FromBody] GetUsersForRoleRequest payload)
+        {
+            return await _userService.GetUsersForRoleAsync(payload);
+        }
+
         [HttpPost("get-mentors")]
         public async Task<GetUsersResponse> GetMentors([FromBody]GetMentorsRequest payload)
         {
