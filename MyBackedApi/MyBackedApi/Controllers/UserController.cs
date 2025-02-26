@@ -51,6 +51,12 @@ namespace MyBackendApi.Controllers
             return await _userService.GetAdminsCorporateAsync(payload);
         }
 
+        [HttpPost("get-companies")]
+        public async Task<GetOccupationsResponse> GetOccupations([FromBody] GetOccupationsRequest payload)
+        {
+            return await _userService.GetAdminsCorporateAsync(payload);
+        }
+
         [HttpGet("get-current-user-details")]
         public async Task<ActionResult<GetCurrentUserDetailsResponse>> GetCurrentUserDetails()
         {

@@ -35,6 +35,7 @@ namespace MyBackendApi.Services
                 Role = user.Role,
                 CompletedSteps = user.CompletedSteps,
                 OccupationName = user.Occupation.Name,
+                CreatedAt = user.CreatedAt,
                 IsApproved = user.IsApproved
             }).ToList();
         }
@@ -51,6 +52,7 @@ namespace MyBackendApi.Services
                 Role = user.Role,
                 CompletedSteps = user.CompletedSteps,
                 OccupationName = user.Occupation.Name,
+                CreatedAt = user.CreatedAt,
                 IsApproved = user.IsApproved
             })
                 .OrderBy(u => u.IsApproved)
@@ -76,6 +78,7 @@ namespace MyBackendApi.Services
                 Role = user.Role,
                 CompletedSteps = user.CompletedSteps,
                 OccupationName = user.Occupation.Name,
+                CreatedAt = user.CreatedAt,
                 IsApproved = user.IsApproved
             }).ToList();
 
@@ -98,6 +101,7 @@ namespace MyBackendApi.Services
                 Role = user.Role,
                 CompletedSteps = user.CompletedSteps,
                 OccupationName = user.Occupation.Name,
+                CreatedAt = user.CreatedAt,
                 IsApproved = user.IsApproved
             };
         }
@@ -278,6 +282,7 @@ namespace MyBackendApi.Services
                 Role = user.Role,
                 CompletedSteps = user.CompletedSteps,
                 OccupationName = user.Occupation.Name,
+                CreatedAt = user.CreatedAt,
                 IsApproved = user.IsApproved
             }).ToList();
 

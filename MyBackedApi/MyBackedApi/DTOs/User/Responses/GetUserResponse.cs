@@ -12,6 +12,7 @@ namespace MyBackendApi.Models.Responses
         public RoleTypeEnum Role { get; set; }
         public int CompletedSteps { get; set; }
         public string OccupationName { get; set; }
+        public DateTime CreatedAt { get; set; }
         public bool IsApproved { get; set; }
     }
 }
