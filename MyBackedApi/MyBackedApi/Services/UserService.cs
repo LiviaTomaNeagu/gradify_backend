@@ -1,5 +1,6 @@
 ﻿using Amazon.S3.Model.Internal.MarshallTransformations;
 using Infrastructure.Exceptions;
+using MyBackedApi.DTOs.User;
 using MyBackedApi.DTOs.User.Requests;
 using MyBackedApi.DTOs.User.Responses;
 using MyBackedApi.Enums;
@@ -293,5 +294,36 @@ namespace MyBackendApi.Services
                 TotalUsers = usersResponse.TotalUsers
             };
         }
+
+        public async Task<GetOccupationsResponse> GetOccupationsAsync(GetOccupationsRequest payload)
+        {
+            var occupationsResponse = await _occupationRepository.GetOccupations(payload);
+
+            var occupations = new List<ShortOccupationDTO>();
+
+            foreach (var o in occupationsResponse.Occupations)
+            {
+                var isActive = await _occupationRepository.IsOccupationActive(o.Id); // Run sequentially
+
+                occupations.Add(new ShortOccupationDTO
+                {
+                    Id = o.Id,
+                    Name = o.Name,
+                    AdminEmail = o.AdminEmail,
+                    AdminSurname = o.AdminSurname,
+                    AdminName = o.AdminName,
+                    IsActive = isActive
+                });
+            }
+
+            return new GetOccupationsResponse
+            {
+                Occupations = occupations,
+                TotalNumber = occupationsResponse.TotalOccupation,
+                TotalActive = await _occupationRepository.GetActiveOccupationsCount()
+            };
+        }
+
+
     }
 }

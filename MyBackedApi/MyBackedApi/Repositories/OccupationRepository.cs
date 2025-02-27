@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MyBackedApi.Data;
+using MyBackedApi.DTOs.User.Requests;
 using MyBackedApi.Models;
 using MyBackendApi.Repositories;
 
@@ -79,5 +80,64 @@ namespace MyBackedApi.Repositories
 
             return user.Id;
         }
+
+        public async Task<(IEnumerable<Occupation> Occupations, int TotalOccupation)> GetOccupations(GetOccupationsRequest payload)
+        {
+            var coordinatorOccupation = await GetOccupationByName("PROFESOR UNITBV");
+            var studentOccupation = await GetOccupationByName("STUDENT");
+
+            if (coordinatorOccupation == null || studentOccupation == null)
+            {
+                throw new Exception("Required occupations not found");
+            }
+
+            var query = _context.Occupations
+                .Where(o => o.Id != coordinatorOccupation.Id && o.Id != studentOccupation.Id)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(payload.SearchTerm))
+            {
+                string searchTerm = payload.SearchTerm.Trim().ToLower();
+                query = query.Where(u =>
+                    u.Name.ToLower().Contains(searchTerm) ||
+                    u.Domain.ToLower().Contains(searchTerm));
+            }
+
+            var totalOccupation = await query.CountAsync();
+
+            var skip = (payload.Page - 1) * payload.PageSize;
+            var occupations = await query
+                .OrderBy(u => u.Name)
+                .Skip(skip)
+                .Take(payload.PageSize)
+                .ToListAsync();
+
+            return (occupations, totalOccupation);
+        }
+
+
+        public async Task<int> GetActiveOccupationsCount()
+        {
+            var coordinatorOccupationId = GetOccupationByName("PROFESOR UNITBV").Result.Id;
+            var studentOccupationId = GetOccupationByName("STUDENT").Result.Id;
+
+            return await _context.Answers
+                .Include(a => a.User)
+                .Where(a => a.User.OccupationId != coordinatorOccupationId && a.User.OccupationId != studentOccupationId)
+                .Select(a => a.User.OccupationId)
+                .Distinct()
+                .CountAsync();
+        }
+
+        public async Task<bool> IsOccupationActive(Guid occupationId)
+        {
+            return await _context.Answers
+                .Include(a => a.User)
+                .Where(a => a.User.OccupationId == occupationId)
+                .Select(a => a.User.OccupationId)
+                .Distinct()
+                .AnyAsync();
+        }
+
     }
 }
