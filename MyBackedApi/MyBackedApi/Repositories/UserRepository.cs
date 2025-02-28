@@ -135,12 +135,14 @@ namespace MyBackendApi.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task<(IEnumerable<User> Users, int TotalUsers)> GetUsersByRole(GetUsersForRoleRequest payload)
+        public async Task<(IEnumerable<User> Users, int TotalUsers, int FilteredUsers)> GetUsersByRole(GetUsersForRoleRequest payload)
         {
             var query = _context.Users
                 .Include(u => u.Occupation)
                 .Where(u => u.Role == payload.Role)
                 .AsQueryable();
+
+            var totalUsers = await query.CountAsync();
 
             if (!string.IsNullOrWhiteSpace(payload.SearchTerm))
             {
@@ -150,7 +152,7 @@ namespace MyBackendApi.Repositories
                     u.Surname.ToLower().Contains(searchTerm));
             }
 
-            var totalUsers = await query.CountAsync();
+            var filteredUsers = await query.CountAsync();
 
             var skip = (payload.Page - 1) * payload.PageSize;
             var users = await query
@@ -160,7 +162,7 @@ namespace MyBackendApi.Repositories
                 .Take(payload.PageSize)
                 .ToListAsync();
 
-            return (users, totalUsers);
+            return (users, totalUsers, filteredUsers);
         }
 
     }

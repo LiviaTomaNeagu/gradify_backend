@@ -291,7 +291,8 @@ namespace MyBackendApi.Services
             return new()
             {
                 Users = users,
-                TotalUsers = usersResponse.TotalUsers
+                TotalUsers = usersResponse.TotalUsers,
+                FilteredUsers = usersResponse.FilteredUsers
             };
         }
 

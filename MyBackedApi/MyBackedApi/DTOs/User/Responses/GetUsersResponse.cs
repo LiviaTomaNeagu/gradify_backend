@@ -6,5 +6,6 @@ namespace MyBackedApi.DTOs.User.Responses
     {
         public List<GetUserResponse> Users { get; set; }
         public int TotalUsers { get; set; }
+        public int FilteredUsers { get; set; }
     }
 }

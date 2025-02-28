@@ -97,10 +97,9 @@ namespace MyBackendApi.Controllers
         }
 
         [HttpPost("add-occupation")]
-        public async Task<IActionResult> AddOccupation([FromBody] AddOccupationRequest request)
+        public async Task<AddOccupationResponse> AddOccupation([FromBody] AddOccupationRequest request)
         {
-            await _userService.AddOccupationAsync(request);
-            return Ok("Success!");
+            return await _userService.AddOccupationAsync(request);
         }
 
         [HttpPut("update-occupation")]
