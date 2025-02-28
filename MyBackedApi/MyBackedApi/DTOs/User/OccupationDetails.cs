@@ -13,6 +13,7 @@
         public string AdminName { get; set; }
         public string AdminSurname { get; set; }
         public bool IsActive { get; set; }
+        public int NumberOfResponses { get; set; }
 
     }
 }

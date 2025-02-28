@@ -57,6 +57,13 @@ namespace MyBackendApi.Controllers
             return await _userService.GetOccupationsAsync(payload);
         }
 
+        [HttpGet("get-company-details/{occupationId}")]
+        public async Task<GetOccupationDetailsResponse> GetOccupationDetails([FromRoute] Guid occupationId)
+        {
+            return await _userService.GetOccupationDetailAsync(occupationId);
+        }
+
+
         [HttpGet("get-current-user-details")]
         public async Task<ActionResult<GetCurrentUserDetailsResponse>> GetCurrentUserDetails()
         {

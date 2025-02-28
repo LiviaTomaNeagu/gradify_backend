@@ -324,6 +324,24 @@ namespace MyBackendApi.Services
             };
         }
 
-
+        public async Task<GetOccupationDetailsResponse> GetOccupationDetailAsync(Guid occupationId)
+        {
+            var occupation = await _occupationRepository.GetOccupationByIdAsync(occupationId);
+            return new GetOccupationDetailsResponse()
+            {
+                Id = occupationId,
+                Name = occupation.Name,
+                Domain = occupation.Domain,
+                Address = occupation.Address,
+                City = occupation.City,
+                Country = occupation.Country,
+                AdminEmail = occupation.AdminEmail,
+                AdminName = occupation.AdminName,
+                AdminSurname = occupation.AdminSurname,
+                CreatedAt =occupation.CreatedAt,
+                IsActive = await _occupationRepository.IsOccupationActive(occupationId),
+                NumberOfResponses = await _occupationRepository.GetNumberOfResponsesAsync(occupationId)
+            };
+        }
     }
 }
