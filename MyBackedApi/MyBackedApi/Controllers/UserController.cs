@@ -33,6 +33,12 @@ namespace MyBackendApi.Controllers
             return await _userService.GetAllUsersAsync();
         }
 
+        [HttpPost("get-users-for-role")]
+        public async Task<GetUsersResponse> GetUsersForRole([FromBody] GetUsersForRoleRequest payload)
+        {
+            return await _userService.GetUsersForRoleAsync(payload);
+        }
+
         [HttpPost("get-mentors")]
         public async Task<GetUsersResponse> GetMentors([FromBody]GetMentorsRequest payload)
         {
@@ -44,6 +50,19 @@ namespace MyBackendApi.Controllers
         {
             return await _userService.GetAdminsCorporateAsync(payload);
         }
+
+        [HttpPost("get-companies")]
+        public async Task<GetOccupationsResponse> GetOccupations([FromBody] GetOccupationsRequest payload)
+        {
+            return await _userService.GetOccupationsAsync(payload);
+        }
+
+        [HttpGet("get-company-details/{occupationId}")]
+        public async Task<GetOccupationDetailsResponse> GetOccupationDetails([FromRoute] Guid occupationId)
+        {
+            return await _userService.GetOccupationDetailAsync(occupationId);
+        }
+
 
         [HttpGet("get-current-user-details")]
         public async Task<ActionResult<GetCurrentUserDetailsResponse>> GetCurrentUserDetails()
@@ -78,10 +97,9 @@ namespace MyBackendApi.Controllers
         }
 
         [HttpPost("add-occupation")]
-        public async Task<IActionResult> AddOccupation([FromBody] AddOccupationRequest request)
+        public async Task<AddOccupationResponse> AddOccupation([FromBody] AddOccupationRequest request)
         {
-            await _userService.AddOccupationAsync(request);
-            return Ok("Success!");
+            return await _userService.AddOccupationAsync(request);
         }
 
         [HttpPut("update-occupation")]

@@ -1,5 +1,6 @@
 ﻿using Amazon.S3.Model.Internal.MarshallTransformations;
 using Infrastructure.Exceptions;
+using MyBackedApi.DTOs.User;
 using MyBackedApi.DTOs.User.Requests;
 using MyBackedApi.DTOs.User.Responses;
 using MyBackedApi.Enums;
@@ -35,6 +36,7 @@ namespace MyBackendApi.Services
                 Role = user.Role,
                 CompletedSteps = user.CompletedSteps,
                 OccupationName = user.Occupation.Name,
+                CreatedAt = user.CreatedAt,
                 IsApproved = user.IsApproved
             }).ToList();
         }
@@ -51,6 +53,7 @@ namespace MyBackendApi.Services
                 Role = user.Role,
                 CompletedSteps = user.CompletedSteps,
                 OccupationName = user.Occupation.Name,
+                CreatedAt = user.CreatedAt,
                 IsApproved = user.IsApproved
             })
                 .OrderBy(u => u.IsApproved)
@@ -76,6 +79,7 @@ namespace MyBackendApi.Services
                 Role = user.Role,
                 CompletedSteps = user.CompletedSteps,
                 OccupationName = user.Occupation.Name,
+                CreatedAt = user.CreatedAt,
                 IsApproved = user.IsApproved
             }).ToList();
 
@@ -98,6 +102,7 @@ namespace MyBackendApi.Services
                 Role = user.Role,
                 CompletedSteps = user.CompletedSteps,
                 OccupationName = user.Occupation.Name,
+                CreatedAt = user.CreatedAt,
                 IsApproved = user.IsApproved
             };
         }
@@ -266,5 +271,78 @@ namespace MyBackendApi.Services
             };
         }
 
+        public async Task<GetUsersResponse> GetUsersForRoleAsync(GetUsersForRoleRequest payload)
+        {
+            var usersResponse = await _userRepository.GetUsersByRole(payload);
+            var users = usersResponse.Users.Select(user => new GetUserResponse
+            {
+                Id = user.Id,
+                Name = user.Name,
+                Surname = user.Surname,
+                Email = user.Email,
+                Role = user.Role,
+                CompletedSteps = user.CompletedSteps,
+                OccupationName = user.Occupation.Name,
+                CreatedAt = user.CreatedAt,
+                IsApproved = user.IsApproved
+            }).ToList();
+
+
+            return new()
+            {
+                Users = users,
+                TotalUsers = usersResponse.TotalUsers,
+                FilteredUsers = usersResponse.FilteredUsers
+            };
+        }
+
+        public async Task<GetOccupationsResponse> GetOccupationsAsync(GetOccupationsRequest payload)
+        {
+            var occupationsResponse = await _occupationRepository.GetOccupations(payload);
+
+            var occupations = new List<ShortOccupationDTO>();
+
+            foreach (var o in occupationsResponse.Occupations)
+            {
+                var isActive = await _occupationRepository.IsOccupationActive(o.Id); // Run sequentially
+
+                occupations.Add(new ShortOccupationDTO
+                {
+                    Id = o.Id,
+                    Name = o.Name,
+                    AdminEmail = o.AdminEmail,
+                    AdminSurname = o.AdminSurname,
+                    AdminName = o.AdminName,
+                    IsActive = isActive
+                });
+            }
+
+            return new GetOccupationsResponse
+            {
+                Occupations = occupations,
+                TotalNumber = occupationsResponse.TotalOccupation,
+                TotalActive = await _occupationRepository.GetActiveOccupationsCount()
+            };
+        }
+
+        public async Task<GetOccupationDetailsResponse> GetOccupationDetailAsync(Guid occupationId)
+        {
+            var occupation = await _occupationRepository.GetOccupationByIdAsync(occupationId);
+            return new GetOccupationDetailsResponse()
+            {
+                Id = occupationId,
+                Name = occupation.Name,
+                Domain = occupation.Domain,
+                Address = occupation.Address,
+                City = occupation.City,
+                Country = occupation.Country,
+                AdminEmail = occupation.AdminEmail,
+                AdminName = occupation.AdminName,
+                AdminSurname = occupation.AdminSurname,
+                CreatedAt =occupation.CreatedAt,
+                IsActive = await _occupationRepository.IsOccupationActive(occupationId),
+                NumberOfResponses = await _occupationRepository.GetNumberOfResponsesAsync(occupationId)
+            };
+        }
     }
 }

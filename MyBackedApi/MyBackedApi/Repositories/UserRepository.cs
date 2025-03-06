@@ -134,5 +134,36 @@ namespace MyBackendApi.Repositories
             user.IsApproved = true;
             await _context.SaveChangesAsync();
         }
+
+        public async Task<(IEnumerable<User> Users, int TotalUsers, int FilteredUsers)> GetUsersByRole(GetUsersForRoleRequest payload)
+        {
+            var query = _context.Users
+                .Include(u => u.Occupation)
+                .Where(u => u.Role == payload.Role)
+                .AsQueryable();
+
+            var totalUsers = await query.CountAsync();
+
+            if (!string.IsNullOrWhiteSpace(payload.SearchTerm))
+            {
+                string searchTerm = payload.SearchTerm.Trim().ToLower();
+                query = query.Where(u =>
+                    u.Name.ToLower().Contains(searchTerm) ||
+                    u.Surname.ToLower().Contains(searchTerm));
+            }
+
+            var filteredUsers = await query.CountAsync();
+
+            var skip = (payload.Page - 1) * payload.PageSize;
+            var users = await query
+                .OrderBy(u => u.Surname)
+                .ThenBy(u => u.Name)
+                .Skip(skip)
+                .Take(payload.PageSize)
+                .ToListAsync();
+
+            return (users, totalUsers, filteredUsers);
+        }
+
     }
 }
