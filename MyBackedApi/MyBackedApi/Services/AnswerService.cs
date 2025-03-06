@@ -22,7 +22,7 @@ namespace MyBackendApi.Services
             _userRepository = userRepository;
         }
 
-        public async Task<Answer> AddAnswerAsync(Guid questionId, AddAnswerRequest request)
+        public async Task<Answer> AddAnswerAsync(Guid questionId, AddAnswerRequest request, Guid currentUserId)
         {
             var question = await _questionRepository.GetQuestionByIdAsync(questionId);
             if (question == null)
@@ -30,7 +30,7 @@ namespace MyBackendApi.Services
                 throw new KeyNotFoundException("Question not found");
             }
 
-            var user = await _userRepository.GetUserByIdAsync(request.UserId);
+            var user = await _userRepository.GetUserByIdAsync(currentUserId);
             if(user == null)
             {
                 throw new KeyNotFoundException("User not found");
@@ -42,12 +42,13 @@ namespace MyBackendApi.Services
                 QuestionId = questionId,
                 Content = request.Content,
                 CreatedAt = DateTime.UtcNow,
-                UserId = request.UserId,
+                UserId = currentUserId,
                 User = user
             };
 
             await _answerRepository.AddAnswerAsync(answer);
             return answer;
         }
+
     }
 }

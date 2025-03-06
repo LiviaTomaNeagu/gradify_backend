@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Infrastructure.Base;
+using Microsoft.AspNetCore.Mvc;
 using MyBackedApi.DTOs.Forum.Requests;
 using MyBackedApi.DTOs.Forum.Responses;
 using MyBackendApi.Services;
@@ -7,7 +8,7 @@ namespace MyBackendApi.Controllers
 {
     [ApiController]
     [Route("api/forum")]
-    public class ForumController : ControllerBase
+    public class ForumController : BaseApiController
     {
         private readonly QuestionService _questionService;
         private readonly AnswerService _answerService;
@@ -58,7 +59,8 @@ namespace MyBackendApi.Controllers
         [HttpPost("questions/{questionId}/details")]
         public async Task<IActionResult> AddAnswer(Guid questionId, [FromBody] AddAnswerRequest request)
         {
-            var answer = await _answerService.AddAnswerAsync(questionId, request);
+            var currentUserId = GetUserIdFromToken();
+            var answer = await _answerService.AddAnswerAsync(questionId, request, currentUserId);
             return CreatedAtAction(nameof(AddAnswer), new { questionId }, new {answer.Id, answer.QuestionId, answer.Content, answer.CreatedAt, answer.UserId} );
         }
 

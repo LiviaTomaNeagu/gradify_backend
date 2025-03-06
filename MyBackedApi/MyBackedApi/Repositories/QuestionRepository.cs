@@ -78,6 +78,27 @@ namespace MyBackendApi.Repositories
                 .ToListAsync();
         }
 
+        public async Task<List<User>> GetUsersInteractedWith(Guid mentorId)
+        {
+            return await _context.Questions
+                .Include(q => q.User)
+                    .ThenInclude(u => u.Occupation)
+                .Where(q => q.Answers.Any(a => a.UserId == mentorId))
+                .OrderByDescending(q => q.CreatedAt)
+                .Select(q => q.User)
+                .Distinct()
+                .ToListAsync();
+        }
+
+        public async Task<List<Question>> GetLatestQuestions(Guid mentorId)
+        {
+            return await _context.Questions
+                .Where(q => q.Answers.Any(a => a.UserId == mentorId))
+                .OrderByDescending(q => q.CreatedAt)
+                .ToListAsync();
+        }
+
+
 
     }
 }   

@@ -21,5 +21,18 @@ namespace MyBackendApi.Repositories
             await _context.SaveChangesAsync();
         }
 
-    }   
+        public async Task<int> GetAnswersCountForUser(Guid userId)
+        {
+            return await _context.Answers
+                .Where(a => a.UserId == userId)
+                .CountAsync();
+        }
+
+        public async Task<List<Answer>> GetLastWeekAnswers(Guid userId)
+        {
+            return await _context.Answers
+                .Where(a => a.UserId == userId && a.CreatedAt >= DateTime.UtcNow.AddDays(-7))
+                .ToListAsync();
+        }
+    }
 }

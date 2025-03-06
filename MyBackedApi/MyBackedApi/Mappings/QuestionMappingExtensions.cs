@@ -1,4 +1,7 @@
-﻿using MyBackedApi.DTOs.Forum.Responses;
+﻿using MyBackedApi.DTOs.Forum;
+using MyBackedApi.DTOs.Forum.Responses;
+using MyBackedApi.DTOs.User;
+using MyBackedApi.Enums;
 using MyBackedApi.Models;
 using MyBackendApi.Mappings;
 
@@ -55,5 +58,21 @@ namespace MyBackedApi.Mappings
             };
         }
 
+        public static LatestQuestion ToLatestQuestion(this Question question)
+        {
+            return new LatestQuestion
+            {
+                Id = question.Id,
+                Title = question.Title,
+                CreatedAt = question.CreatedAt,
+                Topic = question.Topic,
+                Author = question.User.ToShortUserDto()
+            };
+        }
+
+        public static List<LatestQuestion> ToLatestQuestions(this List<Question> questions)
+        {
+            return questions.Select(q => q.ToLatestQuestion()).ToList();
+        }
     }
 }

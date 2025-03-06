@@ -8,6 +8,8 @@ using MyBackedApi.Models;
 using MyBackedApi.Repositories;
 using MyBackendApi.Models.Responses;
 using MyBackendApi.Repositories;
+using MyBackendApi.Mappings;
+using MyBackedApi.Mappings;
 
 namespace MyBackendApi.Services
 {
@@ -15,13 +17,19 @@ namespace MyBackendApi.Services
     {
         private readonly UserRepository _userRepository;
         private readonly OccupationRepository _occupationRepository;
+        public readonly AnswerRepository _answerRepository;
+        public readonly QuestionRepository _questionRepository;
 
         public UserService(
             UserRepository userRepository,
-            OccupationRepository occupationRepository)
+            OccupationRepository occupationRepository,
+            AnswerRepository answerRepository,
+            QuestionRepository questionRepository)
         {
             _userRepository = userRepository;
             _occupationRepository = occupationRepository;
+            _answerRepository = answerRepository;
+            _questionRepository = questionRepository;
         }
 
         public async Task<List<GetUserResponse>> GetAllUsersAsync()
@@ -344,5 +352,45 @@ namespace MyBackendApi.Services
                 NumberOfResponses = await _occupationRepository.GetNumberOfResponsesAsync(occupationId)
             };
         }
+
+        public async Task<GetStatsMentorResponse> GetStatsForMentorAsync(Guid mentorId)
+        {
+            var answersCount = await _answerRepository.GetAnswersCountForUser(mentorId);
+            var topUsers = await _questionRepository.GetUsersInteractedWith(mentorId);
+            var latestQuestions = await _questionRepository.GetLatestQuestions(mentorId);
+            var lastWeekAnswers = await _answerRepository.GetLastWeekAnswers(mentorId);
+
+            var activityGraph = GenerateActivityGraph(lastWeekAnswers);
+
+            return new GetStatsMentorResponse
+            {
+                TopUsers = topUsers.ToShortUsersDto(),
+                TotalAnswers = answersCount,
+                LatestQuestions = latestQuestions.ToLatestQuestions(),
+                ActivityGraph = activityGraph
+
+            };
+        }
+
+        private List<GraphDataPoint> GenerateActivityGraph(List<Answer> lastWeekAnswers)
+        {
+            var today = DateTime.UtcNow.Date;
+            var startOfWeek = today.AddDays(-6);
+
+            var graphData = new List<GraphDataPoint>();
+
+            for (int i = 0; i < 7; i++)
+            {
+                var day = startOfWeek.AddDays(i);
+                graphData.Add(new GraphDataPoint
+                {
+                    Name = day.ToString("dddd"),
+                    Value = lastWeekAnswers.Count(a => a.CreatedAt.Date == day)
+                });
+            }
+
+            return graphData;
+        }
+
     }
 }
