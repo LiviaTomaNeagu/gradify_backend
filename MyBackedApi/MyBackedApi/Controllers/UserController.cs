@@ -139,5 +139,13 @@ namespace MyBackendApi.Controllers
             var response = await _userService.GetCompanyAsync(userId);
             return Ok(response);
         }
+
+        [HttpGet("stats/{mentorId}")]
+        public async Task<ActionResult<GetStatsMentorResponse>> GetStatsForMentor([FromRoute] Guid mentorId)
+        {
+            var response = await _userService.GetStatsForMentorAsync(mentorId);
+            return Ok(response);
+        }
+
     }
 }
