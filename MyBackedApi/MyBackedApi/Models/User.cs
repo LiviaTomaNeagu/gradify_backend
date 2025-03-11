@@ -18,5 +18,7 @@ namespace MyBackedApi.Models
         public Occupation Occupation { get; set; }
 
         public ICollection<Question> Questions { get; set; }
+        public ICollection<Student_Coordinator> Students { get; set; }  // Coordonatorul are studenți
+        public ICollection<Student_Coordinator> Coordinators { get; set; } // Studentul are coordonatori
     }
 }

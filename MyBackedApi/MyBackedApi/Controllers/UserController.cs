@@ -147,5 +147,16 @@ namespace MyBackendApi.Controllers
             return Ok(response);
         }
 
+        [HttpPost("add-coordinator-for/{userId}")]
+        public async Task<IActionResult> AddCoodinatorForStudent([FromRoute] Guid userId)
+        {
+            var currentUserId = GetUserIdFromToken();
+            await _userService.AddCoodinatorForStudentAsync(userId, currentUserId);
+            return Ok(new BaseResponseEmpty()
+            {
+                Message = "Student added!"
+            });
+        }
+
     }
 }

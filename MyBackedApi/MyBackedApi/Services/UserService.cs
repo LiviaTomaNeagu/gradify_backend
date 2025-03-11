@@ -393,5 +393,9 @@ namespace MyBackendApi.Services
             return graphData;
         }
 
+        public async Task AddCoodinatorForStudentAsync(Guid studentId, Guid coordinatorId)
+        {
+            await _userRepository.AddCoordinatorForUserAsync(studentId, coordinatorId);
+        }
     }
 }

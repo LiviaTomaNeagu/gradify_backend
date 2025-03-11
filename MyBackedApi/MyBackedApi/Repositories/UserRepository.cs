@@ -165,5 +165,33 @@ namespace MyBackendApi.Repositories
             return (users, totalUsers, filteredUsers);
         }
 
+        public async Task AddCoordinatorForUserAsync(Guid studentId, Guid coordinatorId)
+        {
+            var student = await _context.Users.FindAsync(studentId);
+            var coordinator = await _context.Users.FindAsync(coordinatorId);
+
+            if (student == null || coordinator == null)
+            {
+                throw new ArgumentException("Either the student or the coordinator does not exist.");
+            }
+
+            var existingRelation = await _context.Student_Coordinators
+                .FirstOrDefaultAsync(sc => sc.StudentId == studentId && sc.CoordinatorId == coordinatorId);
+
+            if (existingRelation != null)
+            {
+                throw new InvalidOperationException("This student is already assigned to this coordinator.");
+            }
+
+            var studentCoordinator = new Student_Coordinator
+            {
+                StudentId = studentId,
+                CoordinatorId = coordinatorId
+            };
+
+            _context.Student_Coordinators.Add(studentCoordinator);
+            await _context.SaveChangesAsync();
+        }
+
     }
 }
