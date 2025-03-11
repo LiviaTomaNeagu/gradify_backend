@@ -359,6 +359,7 @@ namespace MyBackendApi.Services
             var topUsers = await _questionRepository.GetUsersInteractedWith(mentorId);
             var latestQuestions = await _questionRepository.GetLatestQuestions(mentorId);
             var lastWeekAnswers = await _answerRepository.GetLastWeekAnswers(mentorId);
+            var favoriteTopics = await _questionRepository.GetFavoriteTopic(mentorId);
 
             var activityGraph = GenerateActivityGraph(lastWeekAnswers);
 
@@ -367,8 +368,8 @@ namespace MyBackendApi.Services
                 TopUsers = topUsers.ToShortUsersDto(),
                 TotalAnswers = answersCount,
                 LatestQuestions = latestQuestions.ToLatestQuestions(),
-                ActivityGraph = activityGraph
-
+                ActivityGraph = activityGraph,
+                FavoriteTopics = favoriteTopics
             };
         }
 
