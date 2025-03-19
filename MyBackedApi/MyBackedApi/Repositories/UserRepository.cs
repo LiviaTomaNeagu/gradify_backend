@@ -193,5 +193,45 @@ namespace MyBackendApi.Repositories
             await _context.SaveChangesAsync();
         }
 
+        public async Task<IEnumerable<User>> GetAvailableStudents()
+        {
+            return await _context.Users
+                .Where(u => u.IsApproved
+                    && u.Role == RoleTypeEnum.STUDENT
+                    && !_context.Student_Coordinators.Any(sc => sc.StudentId == u.Id))
+                .ToListAsync();
+        }
+
+        public async Task<(IEnumerable<User> Users, int TotalUsers, int FilteredUsers)> GetStudentsForCoordinator(GetUsersForRoleRequest payload, Guid currentUserId)
+        {
+            var query = _context.Users
+                .Include(u => u.Occupation)
+                .Where(u => u.Role == payload.Role
+                    && _context.Student_Coordinators.Any(sc => sc.StudentId == u.Id && sc.CoordinatorId == currentUserId))
+                .AsQueryable();
+
+            var totalUsers = await query.CountAsync();
+
+            if (!string.IsNullOrWhiteSpace(payload.SearchTerm))
+            {
+                string searchTerm = payload.SearchTerm.Trim().ToLower();
+                query = query.Where(u =>
+                    u.Name.ToLower().Contains(searchTerm) ||
+                    u.Surname.ToLower().Contains(searchTerm));
+            } 
+
+            var filteredUsers = await query.CountAsync();
+
+            var skip = (payload.Page - 1) * payload.PageSize;
+            var users = await query
+                .OrderBy(u => u.Surname)
+                .ThenBy(u => u.Name)
+                .Skip(skip)
+                .Take(payload.PageSize)
+                .ToListAsync();
+
+            return (users, totalUsers, filteredUsers);
+        }
+
     }
 }
