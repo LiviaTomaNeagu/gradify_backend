@@ -20,6 +20,7 @@ namespace MyBackendApi.Repositories
         {
             return await _context.Users
                 .Include(u => u.Occupation)
+                .Include(u => u.StudentDetails)
                 .ToListAsync();
         }
 
@@ -61,6 +62,7 @@ namespace MyBackendApi.Repositories
         {
             var user = await _context.Users
                 .Include(u => u.Occupation)
+                .Include( u=> u.StudentDetails)
                 .FirstOrDefaultAsync(u => u.Id == id);
 
             if (user == null)
@@ -206,6 +208,7 @@ namespace MyBackendApi.Repositories
         {
             var query = _context.Users
                 .Include(u => u.Occupation)
+                .Include( u => u.StudentDetails)
                 .Where(u => u.Role == payload.Role
                     && _context.Student_Coordinators.Any(sc => sc.StudentId == u.Id && sc.CoordinatorId == currentUserId))
                 .AsQueryable();

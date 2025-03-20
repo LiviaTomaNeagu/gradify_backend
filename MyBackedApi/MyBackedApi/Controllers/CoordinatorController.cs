@@ -29,8 +29,8 @@ namespace MyBackedApi.Controllers
             return response;
         }
 
-        [HttpGet("get-student")]
-        public async Task<ShortUserDto> GetStudent([FromRoute] Guid studentId)
+        [HttpGet("get-student/{studentId}")]
+        public async Task<GetStudentResponse> GetStudent([FromRoute] Guid studentId)
         {
             var response = await _userService.GetStudentAsync(studentId);
 

@@ -1,6 +1,7 @@
 ﻿using MyBackedApi.DTOs.User;
 using MyBackedApi.Enums;
 using MyBackedApi.Models;
+using MyBackendApi.Models.Responses;
 
 namespace MyBackendApi.Mappings
 {
@@ -24,6 +25,17 @@ namespace MyBackendApi.Mappings
         public static List<ShortUserDto> ToShortUsersDto(this List<User> users)
         {
             return users.Select(u => u.ToShortUserDto()).ToList();
+        }
+
+        public static GetStudentDetailsResponse ToGetStudentDetailsResponse(this StudentDetails studentDetails)
+        {
+            return new GetStudentDetailsResponse
+            {
+                Faculty = studentDetails.Faculty,
+                Specialization = studentDetails.Specialization,
+                Group = studentDetails.Group,
+                EnrollmentDate = studentDetails.EnrollmentDate
+            };
         }
     }
 }

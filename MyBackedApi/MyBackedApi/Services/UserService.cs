@@ -406,16 +406,28 @@ namespace MyBackendApi.Services
             {
                 UserFullNames = availableStudents.Select(u => new UserFullName()
                 {
+                    Id = u.Id,
                     Name = u.Name,
                     Surname = u.Surname
                 }).ToList()
             };
         }
 
-        public async Task<ShortUserDto> GetStudentAsync(Guid studentId)
+        public async Task<GetStudentResponse> GetStudentAsync(Guid studentId)
         {
             var user = await _userRepository.GetUserByIdAsync(studentId);
-            return user.ToShortUserDto();
+            return new GetStudentResponse
+            {
+                UserId = user.Id,
+                Name = user.Name,
+                Surname = user.Surname,
+                Email = user.Email,
+                Faculty = user.StudentDetails.Faculty,
+                Specialization = user.StudentDetails.Specialization,
+                Group = user.StudentDetails.Group,
+                EnrollmentDate = user.StudentDetails.EnrollmentDate,
+                Id = user.StudentDetails.Id
+            };
         }
 
         public async Task<GetUsersResponse> GetMyStudentsAsync(GetUsersForRoleRequest payload, Guid currentUserId)
@@ -431,7 +443,8 @@ namespace MyBackendApi.Services
                 CompletedSteps = user.CompletedSteps,
                 OccupationName = user.Occupation.Name,
                 CreatedAt = user.CreatedAt,
-                IsApproved = user.IsApproved
+                IsApproved = user.IsApproved,
+                StudentDetails = user.StudentDetails.ToGetStudentDetailsResponse()
             }).ToList();
 
 

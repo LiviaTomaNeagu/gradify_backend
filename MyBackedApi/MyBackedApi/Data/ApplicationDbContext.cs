@@ -15,6 +15,7 @@ namespace MyBackedApi.Data
         public DbSet<UserAuthToken> UserAuthTokens { get; set; }
         public DbSet<ActivationCode> ActivationCodes { get; set; }
         public DbSet<Student_Coordinator> Student_Coordinators { get; set; }
+        public DbSet<StudentDetails> StudentDetails { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -59,6 +60,12 @@ namespace MyBackedApi.Data
                 .WithMany(u => u.Coordinators)
                 .HasForeignKey(sc => sc.CoordinatorId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<StudentDetails>().ToTable("student_details")
+                .HasOne(sd => sd.User)
+                .WithOne(u => u.StudentDetails)
+                .HasForeignKey<StudentDetails>(sd => sd.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
 
     }
