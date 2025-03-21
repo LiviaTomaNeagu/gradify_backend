@@ -236,5 +236,38 @@ namespace MyBackendApi.Repositories
             return (users, totalUsers, filteredUsers);
         }
 
+        public async Task AddStudentAsync(Guid studentId, Guid coordinatorId)
+        {
+            var studentExists = await _context.Users.AnyAsync(s => s.Id == studentId);
+            if (!studentExists)
+            {
+                throw new ArgumentException("Student not found.");
+            }
+
+            var coordinatorExists = await _context.Users.AnyAsync(c => c.Id == coordinatorId);
+            if (!coordinatorExists)
+            {
+                throw new ArgumentException("Coordinator not found.");
+            }
+
+            var existingRelation = await _context.Student_Coordinators
+                .AnyAsync(sc => sc.StudentId == studentId && sc.CoordinatorId == coordinatorId);
+
+            if (existingRelation)
+            {
+                throw new InvalidOperationException("Student is already assigned to this coordinator.");
+            }
+
+            var studentCoordinator = new Student_Coordinator
+            {
+                StudentId = studentId,
+                CoordinatorId = coordinatorId
+            };
+
+            _context.Student_Coordinators.Add(studentCoordinator);
+
+            await _context.SaveChangesAsync();
+        }
+
     }
 }

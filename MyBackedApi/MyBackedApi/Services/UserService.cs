@@ -455,5 +455,10 @@ namespace MyBackendApi.Services
                 FilteredUsers = usersResponse.FilteredUsers
             };
         }
+
+        public async Task AddMyStudentAsync(Guid studentId, Guid coordinatorId)
+        {
+            await _userRepository.AddStudentAsync(studentId, coordinatorId);
+        }
     }
 }

@@ -45,5 +45,17 @@ namespace MyBackedApi.Controllers
 
             return response;
         }
+
+        [HttpGet("add-my-student/{studentId}")]
+        public async Task<IActionResult> AddMyStudent([FromRoute] Guid studentId)
+        {
+            var coordinatorId = GetUserIdFromToken();
+            await _userService.AddMyStudentAsync(studentId, coordinatorId);
+
+            return Ok(new BaseResponseEmpty()
+            {
+                Message = "Student added successfully!"
+            });
+        }
     }
 }
