@@ -159,5 +159,27 @@ namespace MyBackendApi.Controllers
             });
         }
 
+        [HttpGet("has-student-details")]
+        public async Task<ActionResult<HasDetailsResponse>> HasStudentDetailsAsync()
+        {
+            var currentUserId = GetUserIdFromToken();
+            var response = await _userService.HasStudentDetailsAsync(currentUserId);
+            return Ok(response);
+        }
+
+        [HttpPost("add-student-details")]
+        public async Task<IActionResult> AddStudentDetailsAsync([FromBody] AddStudentDetails addStudentDetails)
+        {
+            var currentUserId = GetUserIdFromToken();
+            await _userService.AddStudentDetailsAsync(addStudentDetails, currentUserId); 
+
+            return Ok(new BaseResponseEmpty()
+            {
+                Message = "Details added!"
+            });
+        }
+
+        
+
     }
 }

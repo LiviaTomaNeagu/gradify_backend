@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MyBackedApi.Data;
 using MyBackedApi.DTOs.User.Requests;
+using MyBackedApi.DTOs.User.Responses;
 using MyBackedApi.Enums;
 using MyBackedApi.Models;
 using MyBackendApi.Models.Responses;
@@ -284,5 +285,32 @@ namespace MyBackendApi.Repositories
             await _context.SaveChangesAsync();
         }
 
+        public async Task<bool> HasStudentDetailsAsync(Guid currentUserId)
+        {
+            return await _context.StudentDetails.AnyAsync(sd => sd.UserId == currentUserId);
+        }
+
+        public async Task AddStudentDetailsAsync(AddStudentDetails addStudentDetails, Guid currentUserId)
+        {
+            var student = await _context.Users.FirstOrDefaultAsync(s => s.Id == currentUserId);
+
+            if (student == null)
+            {
+                throw new ArgumentException("Student not found.");
+            }
+
+            var studentDetails = new StudentDetails
+            {
+                Faculty = "Facultatea de Matematică și Informatică",
+                Specialization = addStudentDetails.Specialization,
+                Group = addStudentDetails.Group,
+                EnrollmentDate = DateTime.UtcNow,
+                User = student,
+                UserId = student.Id
+            };
+
+            _context.StudentDetails.Add(studentDetails);
+            await _context.SaveChangesAsync();
+        }
     }
 }

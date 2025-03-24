@@ -467,5 +467,18 @@ namespace MyBackendApi.Services
         {
             await _userRepository.RemoveStudentAsync(studentId, coordinatorId);
         }
+
+        public async Task<HasDetailsResponse> HasStudentDetailsAsync(Guid currentUserId)
+        {
+            return new HasDetailsResponse()
+            {
+                HasDetails = await _userRepository.HasStudentDetailsAsync(currentUserId)
+            };
+        }
+
+        public async Task AddStudentDetailsAsync(AddStudentDetails addStudentDetails, Guid currentUserId)
+        {
+            await _userRepository.AddStudentDetailsAsync(addStudentDetails, currentUserId);
+        }
     }
 }
