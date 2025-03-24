@@ -50,29 +50,31 @@ namespace MyBackendApi.Services
             }).ToList();
         }
 
-        public async Task<GetUsersResponse> GetMentorsAsync(GetMentorsRequest payload)
+        public async Task<GetUsersResponse> GetMentorsAsync(GetMentorsRequest payload, Guid currentUserId)
         {
             var usersResponse = await _userRepository.GetUsersWithOccupation(payload);
-            var mentors = usersResponse.Mentors.Select(user => new GetUserResponse
-            {
-                Id = user.Id,
-                Name = user.Name,
-                Surname = user.Surname,
-                Email = user.Email,
-                Role = user.Role,
-                CompletedSteps = user.CompletedSteps,
-                OccupationName = user.Occupation.Name,
-                CreatedAt = user.CreatedAt,
-                IsApproved = user.IsApproved
-            })
+
+            var mentors = usersResponse.Mentors
+                .Where(user => user.Id != currentUserId)
+                .Select(user => new GetUserResponse
+                {
+                    Id = user.Id,
+                    Name = user.Name,
+                    Surname = user.Surname,
+                    Email = user.Email,
+                    Role = user.Role,
+                    CompletedSteps = user.CompletedSteps,
+                    OccupationName = user.Occupation.Name,
+                    CreatedAt = user.CreatedAt,
+                    IsApproved = user.IsApproved
+                })
                 .OrderBy(u => u.IsApproved)
                 .ToList();
-
 
             return new()
             {
                 Users = mentors,
-                TotalUsers = usersResponse.TotalUsers
+                TotalUsers = mentors.Count
             };
         }
 

@@ -42,7 +42,8 @@ namespace MyBackendApi.Controllers
         [HttpPost("get-mentors")]
         public async Task<GetUsersResponse> GetMentors([FromBody]GetMentorsRequest payload)
         {
-            return await _userService.GetMentorsAsync(payload);
+            var currentUserId = GetUserIdFromToken();
+            return await _userService.GetMentorsAsync(payload, currentUserId);
         }
 
         [HttpPost("get-admins-corporate")]
