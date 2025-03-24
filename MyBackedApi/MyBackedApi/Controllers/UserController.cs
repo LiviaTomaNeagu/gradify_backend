@@ -42,7 +42,8 @@ namespace MyBackendApi.Controllers
         [HttpPost("get-mentors")]
         public async Task<GetUsersResponse> GetMentors([FromBody]GetMentorsRequest payload)
         {
-            return await _userService.GetMentorsAsync(payload);
+            var currentUserId = GetUserIdFromToken();
+            return await _userService.GetMentorsAsync(payload, currentUserId);
         }
 
         [HttpPost("get-admins-corporate")]
@@ -145,6 +146,17 @@ namespace MyBackendApi.Controllers
         {
             var response = await _userService.GetStatsForMentorAsync(mentorId);
             return Ok(response);
+        }
+
+        [HttpPost("add-coordinator-for/{userId}")]
+        public async Task<IActionResult> AddCoodinatorForStudent([FromRoute] Guid userId)
+        {
+            var currentUserId = GetUserIdFromToken();
+            await _userService.AddCoodinatorForStudentAsync(userId, currentUserId);
+            return Ok(new BaseResponseEmpty()
+            {
+                Message = "Student added!"
+            });
         }
 
     }

@@ -1,15 +1,16 @@
-﻿using Amazon.S3.Model.Internal.MarshallTransformations;
-using Infrastructure.Exceptions;
+﻿using Infrastructure.Exceptions;
+using MyBackedApi.DTOs.Coordinator;
+using MyBackedApi.DTOs.Coordinator.Responses;
 using MyBackedApi.DTOs.User;
 using MyBackedApi.DTOs.User.Requests;
 using MyBackedApi.DTOs.User.Responses;
 using MyBackedApi.Enums;
+using MyBackedApi.Mappings;
 using MyBackedApi.Models;
 using MyBackedApi.Repositories;
+using MyBackendApi.Mappings;
 using MyBackendApi.Models.Responses;
 using MyBackendApi.Repositories;
-using MyBackendApi.Mappings;
-using MyBackedApi.Mappings;
 
 namespace MyBackendApi.Services
 {
@@ -49,29 +50,31 @@ namespace MyBackendApi.Services
             }).ToList();
         }
 
-        public async Task<GetUsersResponse> GetMentorsAsync(GetMentorsRequest payload)
+        public async Task<GetUsersResponse> GetMentorsAsync(GetMentorsRequest payload, Guid currentUserId)
         {
             var usersResponse = await _userRepository.GetUsersWithOccupation(payload);
-            var mentors = usersResponse.Mentors.Select(user => new GetUserResponse
-            {
-                Id = user.Id,
-                Name = user.Name,
-                Surname = user.Surname,
-                Email = user.Email,
-                Role = user.Role,
-                CompletedSteps = user.CompletedSteps,
-                OccupationName = user.Occupation.Name,
-                CreatedAt = user.CreatedAt,
-                IsApproved = user.IsApproved
-            })
+
+            var mentors = usersResponse.Mentors
+                .Where(user => user.Id != currentUserId)
+                .Select(user => new GetUserResponse
+                {
+                    Id = user.Id,
+                    Name = user.Name,
+                    Surname = user.Surname,
+                    Email = user.Email,
+                    Role = user.Role,
+                    CompletedSteps = user.CompletedSteps,
+                    OccupationName = user.Occupation.Name,
+                    CreatedAt = user.CreatedAt,
+                    IsApproved = user.IsApproved
+                })
                 .OrderBy(u => u.IsApproved)
                 .ToList();
-
 
             return new()
             {
                 Users = mentors,
-                TotalUsers = usersResponse.TotalUsers
+                TotalUsers = mentors.Count
             };
         }
 
@@ -205,7 +208,7 @@ namespace MyBackendApi.Services
             {
                 throw new KeyNotFoundException("Company not found.");
             }
-            if(request.AdminSurname != existingOccupation.AdminSurname || request.AdminName != existingOccupation.AdminName)
+            if (request.AdminSurname != existingOccupation.AdminSurname || request.AdminName != existingOccupation.AdminName)
             {
                 var adminId = await _occupationRepository.GetAdminForOccupation(request.OccupationId);
                 var updatedUser = new UpdateUserRequest
@@ -215,7 +218,7 @@ namespace MyBackendApi.Services
                     Surname = request.AdminSurname
                 };
 
-                await UpdateUserAsync(updatedUser); 
+                await UpdateUserAsync(updatedUser);
             }
 
             existingOccupation.Name = request.Name;
@@ -347,7 +350,7 @@ namespace MyBackendApi.Services
                 AdminEmail = occupation.AdminEmail,
                 AdminName = occupation.AdminName,
                 AdminSurname = occupation.AdminSurname,
-                CreatedAt =occupation.CreatedAt,
+                CreatedAt = occupation.CreatedAt,
                 IsActive = await _occupationRepository.IsOccupationActive(occupationId),
                 NumberOfResponses = await _occupationRepository.GetNumberOfResponsesAsync(occupationId)
             };
@@ -393,5 +396,76 @@ namespace MyBackendApi.Services
             return graphData;
         }
 
+        public async Task AddCoodinatorForStudentAsync(Guid studentId, Guid coordinatorId)
+        {
+            await _userRepository.AddCoordinatorForUserAsync(studentId, coordinatorId);
+        }
+
+        public async Task<GetAvailableStudentsResponse> GetAvailableStudentsAsync()
+        {
+            var availableStudents = await _userRepository.GetAvailableStudents();
+            return new GetAvailableStudentsResponse()
+            {
+                UserFullNames = availableStudents.Select(u => new UserFullName()
+                {
+                    Id = u.Id,
+                    Name = u.Name,
+                    Surname = u.Surname
+                }).ToList()
+            };
+        }
+
+        public async Task<GetStudentResponse> GetStudentAsync(Guid studentId)
+        {
+            var user = await _userRepository.GetUserByIdAsync(studentId);
+            return new GetStudentResponse
+            {
+                UserId = user.Id,
+                Name = user.Name,
+                Surname = user.Surname,
+                Email = user.Email,
+                Faculty = user.StudentDetails.Faculty,
+                Specialization = user.StudentDetails.Specialization,
+                Group = user.StudentDetails.Group,
+                EnrollmentDate = user.StudentDetails.EnrollmentDate,
+                Id = user.StudentDetails.Id
+            };
+        }
+
+        public async Task<GetUsersResponse> GetMyStudentsAsync(GetUsersForRoleRequest payload, Guid currentUserId)
+        {
+            var usersResponse = await _userRepository.GetStudentsForCoordinator(payload, currentUserId);
+            var users = usersResponse.Users.Select(user => new GetUserResponse
+            {
+                Id = user.Id,
+                Name = user.Name,
+                Surname = user.Surname,
+                Email = user.Email,
+                Role = user.Role,
+                CompletedSteps = user.CompletedSteps,
+                OccupationName = user.Occupation.Name,
+                CreatedAt = user.CreatedAt,
+                IsApproved = user.IsApproved,
+                StudentDetails = user.StudentDetails.ToGetStudentDetailsResponse()
+            }).ToList();
+
+
+            return new()
+            {
+                Users = users,
+                TotalUsers = usersResponse.TotalUsers,
+                FilteredUsers = usersResponse.FilteredUsers
+            };
+        }
+
+        public async Task AddMyStudentAsync(Guid studentId, Guid coordinatorId)
+        {
+            await _userRepository.AddStudentAsync(studentId, coordinatorId);
+        }
+
+        public async Task RemoveMyStudentAsync(Guid studentId, Guid coordinatorId)
+        {
+            await _userRepository.RemoveStudentAsync(studentId, coordinatorId);
+        }
     }
 }

@@ -20,6 +20,7 @@ namespace MyBackendApi.Repositories
         {
             return await _context.Users
                 .Include(u => u.Occupation)
+                .Include(u => u.StudentDetails)
                 .ToListAsync();
         }
 
@@ -61,6 +62,7 @@ namespace MyBackendApi.Repositories
         {
             var user = await _context.Users
                 .Include(u => u.Occupation)
+                .Include( u=> u.StudentDetails)
                 .FirstOrDefaultAsync(u => u.Id == id);
 
             if (user == null)
@@ -163,6 +165,123 @@ namespace MyBackendApi.Repositories
                 .ToListAsync();
 
             return (users, totalUsers, filteredUsers);
+        }
+
+        public async Task AddCoordinatorForUserAsync(Guid studentId, Guid coordinatorId)
+        {
+            var student = await _context.Users.FindAsync(studentId);
+            var coordinator = await _context.Users.FindAsync(coordinatorId);
+
+            if (student == null || coordinator == null)
+            {
+                throw new ArgumentException("Either the student or the coordinator does not exist.");
+            }
+
+            var existingRelation = await _context.Student_Coordinators
+                .FirstOrDefaultAsync(sc => sc.StudentId == studentId && sc.CoordinatorId == coordinatorId);
+
+            if (existingRelation != null)
+            {
+                throw new InvalidOperationException("This student is already assigned to this coordinator.");
+            }
+
+            var studentCoordinator = new Student_Coordinator
+            {
+                StudentId = studentId,
+                CoordinatorId = coordinatorId
+            };
+
+            _context.Student_Coordinators.Add(studentCoordinator);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<IEnumerable<User>> GetAvailableStudents()
+        {
+            return await _context.Users
+                .Where(u => u.IsApproved
+                    && u.Role == RoleTypeEnum.STUDENT
+                    && !_context.Student_Coordinators.Any(sc => sc.StudentId == u.Id))
+                .ToListAsync();
+        }
+
+        public async Task<(IEnumerable<User> Users, int TotalUsers, int FilteredUsers)> GetStudentsForCoordinator(GetUsersForRoleRequest payload, Guid currentUserId)
+        {
+            var query = _context.Users
+                .Include(u => u.Occupation)
+                .Include( u => u.StudentDetails)
+                .Where(u => u.Role == payload.Role
+                    && _context.Student_Coordinators.Any(sc => sc.StudentId == u.Id && sc.CoordinatorId == currentUserId))
+                .AsQueryable();
+
+            var totalUsers = await query.CountAsync();
+
+            if (!string.IsNullOrWhiteSpace(payload.SearchTerm))
+            {
+                string searchTerm = payload.SearchTerm.Trim().ToLower();
+                query = query.Where(u =>
+                    u.Name.ToLower().Contains(searchTerm) ||
+                    u.Surname.ToLower().Contains(searchTerm));
+            } 
+
+            var filteredUsers = await query.CountAsync();
+
+            var skip = (payload.Page - 1) * payload.PageSize;
+            var users = await query
+                .OrderBy(u => u.Surname)
+                .ThenBy(u => u.Name)
+                .Skip(skip)
+                .Take(payload.PageSize)
+                .ToListAsync();
+
+            return (users, totalUsers, filteredUsers);
+        }
+
+        public async Task AddStudentAsync(Guid studentId, Guid coordinatorId)
+        {
+            var studentExists = await _context.Users.AnyAsync(s => s.Id == studentId);
+            if (!studentExists)
+            {
+                throw new ArgumentException("Student not found.");
+            }
+
+            var coordinatorExists = await _context.Users.AnyAsync(c => c.Id == coordinatorId);
+            if (!coordinatorExists)
+            {
+                throw new ArgumentException("Coordinator not found.");
+            }
+
+            var existingRelation = await _context.Student_Coordinators
+                .AnyAsync(sc => sc.StudentId == studentId && sc.CoordinatorId == coordinatorId);
+
+            if (existingRelation)
+            {
+                throw new InvalidOperationException("Student is already assigned to this coordinator.");
+            }
+
+            var studentCoordinator = new Student_Coordinator
+            {
+                StudentId = studentId,
+                CoordinatorId = coordinatorId
+            };
+
+            _context.Student_Coordinators.Add(studentCoordinator);
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task RemoveStudentAsync(Guid studentId, Guid coordinatorId)
+        {
+            var studentCoordinator = await _context.Student_Coordinators
+                .FirstOrDefaultAsync(sc => sc.StudentId == studentId && sc.CoordinatorId == coordinatorId);
+
+            if (studentCoordinator == null)
+            {
+                throw new ArgumentException("Student is not assigned to this coordinator.");
+            }
+
+            _context.Student_Coordinators.Remove(studentCoordinator);
+
+            await _context.SaveChangesAsync();
         }
 
     }

@@ -14,6 +14,14 @@ namespace MyBackendApi.Models.Responses
         public string OccupationName { get; set; }
         public DateTime CreatedAt { get; set; }
         public bool IsApproved { get; set; }
+        public GetStudentDetailsResponse? StudentDetails { get; set; }
+    }
+
+    public class GetStudentDetailsResponse
+    {
+        public string Faculty { get; set; } = string.Empty;
+        public string Specialization { get; set; } = string.Empty;
+        public string Group { get; set; } = string.Empty;
+        public DateTime EnrollmentDate { get; set; }
     }
 }
-

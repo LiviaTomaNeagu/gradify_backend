@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyBackedApi.Data;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MyBackedApi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250311072543_AddedFixes")]
+    partial class AddedFixes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -148,41 +151,6 @@ namespace MyBackedApi.Migrations
                     b.ToTable("questions", (string)null);
                 });
 
-            modelBuilder.Entity("MyBackedApi.Models.StudentDetails", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("EnrollmentDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Faculty")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Group")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Specialization")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId")
-                        .IsUnique();
-
-                    b.ToTable("student_details", (string)null);
-                });
-
             modelBuilder.Entity("MyBackedApi.Models.Student_Coordinator", b =>
                 {
                     b.Property<Guid>("StudentId")
@@ -299,17 +267,6 @@ namespace MyBackedApi.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("MyBackedApi.Models.StudentDetails", b =>
-                {
-                    b.HasOne("MyBackedApi.Models.User", "User")
-                        .WithOne("StudentDetails")
-                        .HasForeignKey("MyBackedApi.Models.StudentDetails", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("MyBackedApi.Models.Student_Coordinator", b =>
                 {
                     b.HasOne("MyBackedApi.Models.User", "Coordinator")
@@ -360,9 +317,6 @@ namespace MyBackedApi.Migrations
                     b.Navigation("Coordinators");
 
                     b.Navigation("Questions");
-
-                    b.Navigation("StudentDetails")
-                        .IsRequired();
 
                     b.Navigation("Students");
                 });
