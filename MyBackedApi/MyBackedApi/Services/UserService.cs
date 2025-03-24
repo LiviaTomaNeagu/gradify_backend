@@ -460,5 +460,10 @@ namespace MyBackendApi.Services
         {
             await _userRepository.AddStudentAsync(studentId, coordinatorId);
         }
+
+        public async Task RemoveMyStudentAsync(Guid studentId, Guid coordinatorId)
+        {
+            await _userRepository.RemoveStudentAsync(studentId, coordinatorId);
+        }
     }
 }

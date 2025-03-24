@@ -57,5 +57,17 @@ namespace MyBackedApi.Controllers
                 Message = "Student added successfully!"
             });
         }
+
+        [HttpGet("remove-my-student/{studentId}")]
+        public async Task<IActionResult> RemoveMyStudent([FromRoute] Guid studentId)
+        {
+            var coordinatorId = GetUserIdFromToken();
+            await _userService.RemoveMyStudentAsync(studentId, coordinatorId);
+
+            return Ok(new BaseResponseEmpty()
+            {
+                Message = "Student removed successfully!"
+            });
+        }
     }
 }

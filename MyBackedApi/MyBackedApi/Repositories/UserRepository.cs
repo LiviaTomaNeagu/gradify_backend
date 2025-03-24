@@ -269,5 +269,20 @@ namespace MyBackendApi.Repositories
             await _context.SaveChangesAsync();
         }
 
+        public async Task RemoveStudentAsync(Guid studentId, Guid coordinatorId)
+        {
+            var studentCoordinator = await _context.Student_Coordinators
+                .FirstOrDefaultAsync(sc => sc.StudentId == studentId && sc.CoordinatorId == coordinatorId);
+
+            if (studentCoordinator == null)
+            {
+                throw new ArgumentException("Student is not assigned to this coordinator.");
+            }
+
+            _context.Student_Coordinators.Remove(studentCoordinator);
+
+            await _context.SaveChangesAsync();
+        }
+
     }
 }
