@@ -1,10 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MyBackedApi.Data;
 using MyBackedApi.DTOs.User.Requests;
-using MyBackedApi.DTOs.User.Responses;
 using MyBackedApi.Enums;
 using MyBackedApi.Models;
-using MyBackendApi.Models.Responses;
 
 namespace MyBackendApi.Repositories
 {
@@ -63,7 +61,7 @@ namespace MyBackendApi.Repositories
         {
             var user = await _context.Users
                 .Include(u => u.Occupation)
-                .Include( u=> u.StudentDetails)
+                .Include(u => u.StudentDetails)
                 .FirstOrDefaultAsync(u => u.Id == id);
 
             if (user == null)
@@ -110,7 +108,7 @@ namespace MyBackendApi.Repositories
                .FirstOrDefaultAsync(u => u.Email == email && u.IsApproved == true);
         }
 
-        
+
 
         public async Task ApproveUserAsync(Guid id)
         {
@@ -209,7 +207,7 @@ namespace MyBackendApi.Repositories
         {
             var query = _context.Users
                 .Include(u => u.Occupation)
-                .Include( u => u.StudentDetails)
+                .Include(u => u.StudentDetails)
                 .Where(u => u.Role == payload.Role
                     && _context.Student_Coordinators.Any(sc => sc.StudentId == u.Id && sc.CoordinatorId == currentUserId))
                 .AsQueryable();
@@ -222,7 +220,7 @@ namespace MyBackendApi.Repositories
                 query = query.Where(u =>
                     u.Name.ToLower().Contains(searchTerm) ||
                     u.Surname.ToLower().Contains(searchTerm));
-            } 
+            }
 
             var filteredUsers = await query.CountAsync();
 
@@ -312,5 +310,60 @@ namespace MyBackendApi.Repositories
             _context.StudentDetails.Add(studentDetails);
             await _context.SaveChangesAsync();
         }
+
+        public async Task<int> UsersInteractedWith(Guid currentUserId)
+        {
+            var usersAnsweredTo = await _context.Answers
+                .Where(a => a.UserId == currentUserId)
+                .Join(
+                    _context.Questions,
+                    a => a.QuestionId,
+                    q => q.Id,
+                    (a, q) => q.UserId
+                )
+                .Distinct()
+                .ToListAsync();
+
+            var usersWhoAnsweredMe = await _context.Questions
+                .Where(q => q.UserId == currentUserId)
+                .Join(
+                    _context.Answers,
+                    q => q.Id,
+                    a => a.QuestionId,
+                    (q, a) => a.UserId
+                )
+                .Distinct()
+                .ToListAsync();
+
+            var studentCoordinators = await _context.Student_Coordinators
+                .Where(sc => sc.StudentId == currentUserId || sc.CoordinatorId == currentUserId)
+                .Select(sc => sc.StudentId == currentUserId ? sc.CoordinatorId : sc.StudentId)
+                .Distinct()
+                .ToListAsync();
+
+            var uniqueUsers = usersAnsweredTo
+                .Concat(usersWhoAnsweredMe)
+                .Concat(studentCoordinators)
+                .Distinct()
+                .Count();
+
+            return uniqueUsers;
+        }
+
+        public async Task<int> GetCountInteractions(Guid currentUserId)
+        {
+
+            int questionsAsked = await _context.Questions
+                .Where(q => q.UserId == currentUserId)
+                .CountAsync();
+
+            int answersGiven = await _context.Answers
+                .Where(a => a.UserId == currentUserId)
+                .CountAsync();
+
+            return questionsAsked + answersGiven;
+        }
+
+
     }
 }

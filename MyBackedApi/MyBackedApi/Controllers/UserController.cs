@@ -179,7 +179,14 @@ namespace MyBackendApi.Controllers
             });
         }
 
-        
+        [HttpGet("get-account-details")]
+        public async Task<ActionResult<GetAccountDetailsResponse>> GetAccountDetails()
+        {
+            var currentUserId = GetUserIdFromToken();
+            var response = await _userService.GetAccountDetailsAsync(currentUserId);
+            return Ok(response);
+        }
+
 
     }
 }

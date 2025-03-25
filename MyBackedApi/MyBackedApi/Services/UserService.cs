@@ -480,5 +480,26 @@ namespace MyBackendApi.Services
         {
             await _userRepository.AddStudentDetailsAsync(addStudentDetails, currentUserId);
         }
+
+        public async Task<GetAccountDetailsResponse> GetAccountDetailsAsync(Guid currentUserId)
+        {
+            var user = await _userRepository.GetUserByIdAsync(currentUserId);
+            var interactions = await _userRepository.GetCountInteractions(currentUserId);
+            var usersInteractedWith = await _userRepository.UsersInteractedWith(currentUserId);
+
+            return new GetAccountDetailsResponse
+            {
+                Id = user.Id,
+                Name = user.Name,
+                Surname = user.Surname,
+                Email = user.Email,
+                Role = user.Role,
+                CompletedSteps = user.CompletedSteps,
+                OccupationName = user.Occupation.Name,
+                TotalDays = (DateTime.UtcNow - user.CreatedAt).Days,
+                Interactions = interactions,
+                UsersInteractedWith = usersInteractedWith
+            };
+        }
     }
 }
