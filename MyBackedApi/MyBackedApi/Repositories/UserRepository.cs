@@ -62,6 +62,7 @@ namespace MyBackendApi.Repositories
             var user = await _context.Users
                 .Include(u => u.Occupation)
                 .Include(u => u.StudentDetails)
+                .Include(u => u.UserTopics)
                 .FirstOrDefaultAsync(u => u.Id == id);
 
             if (user == null)

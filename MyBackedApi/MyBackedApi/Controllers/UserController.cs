@@ -1,5 +1,4 @@
 ﻿using Infrastructure.Base;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyBackedApi.DTOs.User.Requests;
 using MyBackedApi.DTOs.User.Responses;
@@ -40,7 +39,7 @@ namespace MyBackendApi.Controllers
         }
 
         [HttpPost("get-mentors")]
-        public async Task<GetUsersResponse> GetMentors([FromBody]GetMentorsRequest payload)
+        public async Task<GetUsersResponse> GetMentors([FromBody] GetMentorsRequest payload)
         {
             var currentUserId = GetUserIdFromToken();
             return await _userService.GetMentorsAsync(payload, currentUserId);
@@ -171,7 +170,7 @@ namespace MyBackendApi.Controllers
         public async Task<IActionResult> AddStudentDetailsAsync([FromBody] AddStudentDetails addStudentDetails)
         {
             var currentUserId = GetUserIdFromToken();
-            await _userService.AddStudentDetailsAsync(addStudentDetails, currentUserId); 
+            await _userService.AddStudentDetailsAsync(addStudentDetails, currentUserId);
 
             return Ok(new BaseResponseEmpty()
             {
@@ -185,6 +184,17 @@ namespace MyBackendApi.Controllers
             var currentUserId = GetUserIdFromToken();
             var response = await _userService.GetAccountDetailsAsync(currentUserId);
             return Ok(response);
+        }
+
+        [HttpPost("add-topic")]
+        public async Task<IActionResult> AddTopic([FromBody] AddTopicRequest payload)
+        {
+            var currentUserId = GetUserIdFromToken();
+            await _userService.AddTopicForUserAsync(payload, currentUserId);
+            return Ok(new BaseResponseEmpty()
+            {
+                Message = "Topic added!"
+            });
         }
 
 

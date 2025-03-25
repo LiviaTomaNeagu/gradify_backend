@@ -37,5 +37,15 @@ namespace MyBackendApi.Mappings
                 EnrollmentDate = studentDetails.EnrollmentDate
             };
         }
+
+        public static List<TopicEnum> ToTopicEnumList(this ICollection<UserTopics> userTopics)
+        {
+            if (userTopics == null || userTopics.Count == 0)
+            {
+                return new List<TopicEnum>();
+            }
+
+            return userTopics.Select(ut => ut.Topic).ToList();
+        }
     }
 }
