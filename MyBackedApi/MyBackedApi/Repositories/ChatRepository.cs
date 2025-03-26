@@ -23,5 +23,13 @@ namespace MyBackedApi.Repositories
                 .OrderBy(m => m.SentAt)
                 .ToListAsync();
         }
+
+        public async Task<List<ChatMessage>> GetAllMessagesForUserAsync(Guid userId)
+        {
+            return await _context.ChatMessages
+                .Where(m => m.ReceiverId == userId.ToString() || m.SenderId == userId.ToString())
+                .OrderBy(m => m.SentAt)
+                .ToListAsync();
+        }
     }
 }

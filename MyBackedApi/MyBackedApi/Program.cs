@@ -40,6 +40,7 @@ builder.Services.AddScoped<QuestionService>();
 builder.Services.AddScoped<AnswerService>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<EmailService>();
+builder.Services.AddScoped<ChatService>();
 
 // Add repositories to the container.
 builder.Services.AddScoped<BaseRepository>();

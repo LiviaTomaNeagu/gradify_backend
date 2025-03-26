@@ -2,6 +2,7 @@
 using MyBackedApi.DTOs;
 using MyBackedApi.Models;
 using MyBackedApi.Services;
+using static MyBackedApi.DTOs.MessagePayload;
 
 namespace MyBackedApi.Hubs
 {
@@ -16,18 +17,29 @@ namespace MyBackedApi.Hubs
 
         public override Task OnConnectedAsync()
         {
-            var userId = Context.User?.FindFirst("sub")?.Value;
-            if (!string.IsNullOrEmpty(userId))
+            try
             {
-                ConnectedUsers.UserConnections[userId] = Context.ConnectionId;
-            }
+                var httpContext = Context.GetHttpContext();
+                var userId = httpContext?.Request.Query["userId"].ToString();
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    ConnectedUsers.UserConnections[userId] = Context.ConnectionId;
+                }
+                Console.WriteLine($"Client conectat: {Context.ConnectionId}");
 
-            return base.OnConnectedAsync();
+                return base.OnConnectedAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Eroare in OnConnected");
+                return base.OnConnectedAsync();
+            }
         }
 
         public override Task OnDisconnectedAsync(Exception? exception)
         {
-            var userId = Context.User?.FindFirst("sub")?.Value;
+            var httpContext = Context.GetHttpContext();
+            var userId = httpContext?.Request.Query["userId"].ToString();
             if (!string.IsNullOrEmpty(userId))
             {
                 ConnectedUsers.UserConnections.TryRemove(userId, out _);
@@ -41,8 +53,8 @@ namespace MyBackedApi.Hubs
         {
             try
             {
-                var senderId = Context.User?.FindFirst("sub")?.Value
-                            ?? Context.User?.FindFirst("nameid")?.Value;
+                var httpContext = Context.GetHttpContext();
+                var senderId = httpContext?.Request.Query["userId"].ToString();
 
                 if (string.IsNullOrEmpty(senderId))
                     throw new HubException("User ID is missing in token");
@@ -69,7 +81,7 @@ namespace MyBackedApi.Hubs
             catch (Exception ex)
             {
                 Console.WriteLine($"❌ ERROR in SendMessage: {ex.Message}");
-                throw; // retrimite către client
+                throw;
             }
 
         }
