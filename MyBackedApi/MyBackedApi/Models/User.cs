@@ -21,5 +21,7 @@ namespace MyBackedApi.Models
         public ICollection<Student_Coordinator> Students { get; set; }  // Coordonatorul are studenți
         public ICollection<Student_Coordinator> Coordinators { get; set; } // Studentul are coordonatori
         public StudentDetails StudentDetails { get; set; }
+
+        public ICollection<UserTopics> UserTopics { get; set; } = new List<UserTopics>();
     }
 }

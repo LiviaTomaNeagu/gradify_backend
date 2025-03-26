@@ -17,17 +17,20 @@ namespace MyBackendApi.Services
     public class UserService
     {
         private readonly UserRepository _userRepository;
+        private readonly UserTopicsRepository _userTopicsRepository;
         private readonly OccupationRepository _occupationRepository;
         public readonly AnswerRepository _answerRepository;
         public readonly QuestionRepository _questionRepository;
 
         public UserService(
             UserRepository userRepository,
-            OccupationRepository occupationRepository,
+             UserTopicsRepository userTopicsRepository,
+        OccupationRepository occupationRepository,
             AnswerRepository answerRepository,
             QuestionRepository questionRepository)
         {
             _userRepository = userRepository;
+            _userTopicsRepository = userTopicsRepository;
             _occupationRepository = occupationRepository;
             _answerRepository = answerRepository;
             _questionRepository = questionRepository;
@@ -479,6 +482,33 @@ namespace MyBackendApi.Services
         public async Task AddStudentDetailsAsync(AddStudentDetails addStudentDetails, Guid currentUserId)
         {
             await _userRepository.AddStudentDetailsAsync(addStudentDetails, currentUserId);
+        }
+
+        public async Task<GetAccountDetailsResponse> GetAccountDetailsAsync(Guid currentUserId)
+        {
+            var user = await _userRepository.GetUserByIdAsync(currentUserId);
+            var interactions = await _userRepository.GetCountInteractions(currentUserId);
+            var usersInteractedWith = await _userRepository.UsersInteractedWith(currentUserId);
+
+            return new GetAccountDetailsResponse
+            {
+                Id = user.Id,
+                Name = user.Name,
+                Surname = user.Surname,
+                Email = user.Email,
+                Role = user.Role,
+                CompletedSteps = user.CompletedSteps,
+                OccupationName = user.Occupation.Name,
+                Topics = user.UserTopics.ToTopicEnumList(),
+                TotalDays = (DateTime.UtcNow - user.CreatedAt).Days,
+                Interactions = interactions,
+                UsersInteractedWith = usersInteractedWith
+            };
+        }
+
+        public async Task AddTopicForUserAsync(AddTopicRequest payload, Guid currentUserId)
+        {
+            await _userTopicsRepository.AddTopicForUserAsync(payload.Topic, currentUserId);
         }
     }
 }
