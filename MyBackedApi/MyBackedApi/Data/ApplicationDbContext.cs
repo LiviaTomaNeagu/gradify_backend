@@ -17,6 +17,8 @@ namespace MyBackedApi.Data
         public DbSet<Student_Coordinator> Student_Coordinators { get; set; }
         public DbSet<StudentDetails> StudentDetails { get; set; }
         public DbSet<UserTopics> UsersTopics { get; set; }
+        public DbSet<ChatMessage> ChatMessages { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -74,6 +76,9 @@ namespace MyBackedApi.Data
                 .WithMany(u => u.UserTopics)
                 .HasForeignKey(ut => ut.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ChatMessage>()
+                .ToTable("chat_messages");
         }
 
     }

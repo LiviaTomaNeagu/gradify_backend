@@ -3,6 +3,7 @@ using Infrastructure.Middlewares;
 using Microsoft.EntityFrameworkCore;
 using MyBackedApi;
 using MyBackedApi.Data;
+using MyBackedApi.Hubs;
 using MyBackedApi.Repositories;
 using MyBackedApi.Services;
 using MyBackendApi.Repositories;
@@ -39,6 +40,7 @@ builder.Services.AddScoped<QuestionService>();
 builder.Services.AddScoped<AnswerService>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<EmailService>();
+builder.Services.AddScoped<ChatService>();
 
 // Add repositories to the container.
 builder.Services.AddScoped<BaseRepository>();
@@ -49,6 +51,7 @@ builder.Services.AddScoped<UserAuthTokenRepository>();
 builder.Services.AddScoped<ActivationCodeRepository>();
 builder.Services.AddScoped<OccupationRepository>();
 builder.Services.AddScoped<UserTopicsRepository>();
+builder.Services.AddScoped<ChatRepository>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -59,6 +62,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddJwtAuthentication();
 builder.Services.AddAuthorization();
 
+builder.Services.AddSignalR();
 
 
 var app = builder.Build();
@@ -83,5 +87,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapHub<ChatHub>("/chatHub");
 
 app.Run();

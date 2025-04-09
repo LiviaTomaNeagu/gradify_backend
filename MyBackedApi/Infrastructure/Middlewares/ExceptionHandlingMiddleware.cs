@@ -6,6 +6,7 @@ using Newtonsoft.Json.Serialization;
 using System.Net;
 using Infrastructure.Base;
 using Infrastructure.Exceptions;
+using Microsoft.AspNetCore.SignalR;
 
 namespace Infrastructure.Middlewares
 {
@@ -69,6 +70,10 @@ namespace Infrastructure.Middlewares
                 await RespondToExceptionAsync(context, HttpStatusCode.Forbidden, ex.Message, ex);
             }
             catch (AmazonServiceException ex)
+            {
+                await RespondToExceptionAsync(context, HttpStatusCode.Forbidden, ex.Message, ex);
+            }
+            catch(HubException ex)
             {
                 await RespondToExceptionAsync(context, HttpStatusCode.Forbidden, ex.Message, ex);
             }

@@ -8,6 +8,7 @@ using MyBackedApi.Enums;
 using MyBackedApi.Mappings;
 using MyBackedApi.Models;
 using MyBackedApi.Repositories;
+using MyBackendApi.Controllers;
 using MyBackendApi.Mappings;
 using MyBackendApi.Models.Responses;
 using MyBackendApi.Repositories;
@@ -509,6 +510,17 @@ namespace MyBackendApi.Services
         public async Task AddTopicForUserAsync(AddTopicRequest payload, Guid currentUserId)
         {
             await _userTopicsRepository.AddTopicForUserAsync(payload.Topic, currentUserId);
+        }
+
+        public async Task<GetShortUsersResponse> GetAllShortUsersAsync(Guid currentUserId)
+        {
+            var users = await _userRepository.GetAllUsersAsync();
+            return new GetShortUsersResponse()
+            {
+                Users = users
+                .Where(user => user.Id != currentUserId)
+                .Select(user => user.ToShortUserDto()).ToList()
+            };
         }
     }
 }

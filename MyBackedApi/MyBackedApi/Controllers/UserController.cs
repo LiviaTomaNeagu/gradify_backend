@@ -32,6 +32,13 @@ namespace MyBackendApi.Controllers
             return await _userService.GetAllUsersAsync();
         }
 
+        [HttpGet("get-all-short-users")]
+        public async Task<GetShortUsersResponse> GetAllShortUsers()
+        {
+            var currentUserId = GetUserIdFromToken();
+            return await _userService.GetAllShortUsersAsync(currentUserId);
+        }
+
         [HttpPost("get-users-for-role")]
         public async Task<GetUsersResponse> GetUsersForRole([FromBody] GetUsersForRoleRequest payload)
         {
