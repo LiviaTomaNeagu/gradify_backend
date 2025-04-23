@@ -18,6 +18,7 @@ namespace MyBackedApi.Data
         public DbSet<StudentDetails> StudentDetails { get; set; }
         public DbSet<UserTopics> UsersTopics { get; set; }
         public DbSet<ChatMessage> ChatMessages { get; set; }
+        public DbSet<Note> Notes { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -79,6 +80,12 @@ namespace MyBackedApi.Data
 
             modelBuilder.Entity<ChatMessage>()
                 .ToTable("chat_messages");
+
+            modelBuilder.Entity<Note>().ToTable("notes")
+                .HasOne(n => n.Student)
+                .WithMany()
+                .HasForeignKey(n => n.StudentId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
 
     }
