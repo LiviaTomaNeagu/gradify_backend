@@ -204,6 +204,12 @@ namespace MyBackendApi.Controllers
             });
         }
 
+        [HttpGet("student-dashboard")]
+        public async Task<GetStudentDashboardResponse> GetStudentDashboard()
+        {
+            var currentUserId = GetUserIdFromToken();
+            return await _userService.GetStudentDashboardAsync(currentUserId);
+        }
 
     }
 }

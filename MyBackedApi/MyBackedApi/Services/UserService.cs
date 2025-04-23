@@ -522,5 +522,22 @@ namespace MyBackendApi.Services
                 .Select(user => user.ToShortUserDto()).ToList()
             };
         }
+
+        public async Task<GetStudentDashboardResponse> GetStudentDashboardAsync(Guid currentUserId)
+        {
+            var latestQuestions = await _questionRepository.GetLatestQuestionsByStudent(currentUserId);
+            var mentorsInteractedWith = await _questionRepository.GetMentorsInteractedWith(currentUserId);
+            var favoriteTopics = await _questionRepository.GetFavoriteTopicsByStudent(currentUserId);
+
+            return new GetStudentDashboardResponse
+            {
+                TotalQuestionsAsked = latestQuestions.Count,
+                TotalMentorsAnswered = mentorsInteractedWith.Count,
+                LatestQuestions = latestQuestions.ToLatestQuestions(),
+                MentorInfo = mentorsInteractedWith.ToShortUsersDto(),
+                FavoriteTopics = favoriteTopics
+            };
+
+        }
     }
 }
