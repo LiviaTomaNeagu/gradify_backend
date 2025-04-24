@@ -117,5 +117,48 @@ namespace MyBackendApi.Repositories
                 .ToListAsync();
         }
 
+        public async Task<List<User>> GetMentorsInteractedWith(Guid studentId)
+        {
+            var answers = await _context.Questions
+                .Where(q => q.UserId == studentId)
+                .SelectMany(q => q.Answers)
+                .Include(a => a.User)
+                    .ThenInclude(u => u.Occupation)
+                .ToListAsync();
+
+            var mentors = answers
+                .Select(a => a.User)
+                .Distinct()
+                .ToList();
+
+            return mentors;
+        }
+
+
+        public async Task<List<Question>> GetLatestQuestionsByStudent(Guid studentId)
+        {
+            return await _context.Questions
+                .Where(q => q.UserId == studentId)
+                .OrderByDescending(q => q.CreatedAt)
+                .ToListAsync();
+        }
+
+        public async Task<List<TopicEnum>> GetFavoriteTopicsByStudent(Guid studentId)
+        {
+            return await _context.Questions
+                .Where(q => q.UserId == studentId)
+                .GroupBy(q => q.Topic)
+                .Select(group => new
+                {
+                    Topic = group.Key,
+                    Count = group.Count(),
+                    LatestAskedAt = group.Max(q => q.CreatedAt)
+                })
+                .OrderByDescending(g => g.Count)
+                .ThenByDescending(g => g.LatestAskedAt)
+                .Select(g => g.Topic)
+                .ToListAsync();
+        }
+
     }
 }   

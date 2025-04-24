@@ -41,6 +41,7 @@ builder.Services.AddScoped<AnswerService>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<ChatService>();
+builder.Services.AddScoped<NotesService>();
 
 // Add repositories to the container.
 builder.Services.AddScoped<BaseRepository>();
@@ -52,6 +53,7 @@ builder.Services.AddScoped<ActivationCodeRepository>();
 builder.Services.AddScoped<OccupationRepository>();
 builder.Services.AddScoped<UserTopicsRepository>();
 builder.Services.AddScoped<ChatRepository>();
+builder.Services.AddScoped<NotesRepository>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
