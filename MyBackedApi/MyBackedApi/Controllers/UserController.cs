@@ -211,5 +211,22 @@ namespace MyBackendApi.Controllers
             return await _userService.GetStudentDashboardAsync(currentUserId);
         }
 
+        [HttpGet("get-my-progress")]
+        public async Task<GetMyProgressDataResponse> GetMyProgressData()
+        {
+            var currentUserId = GetUserIdFromToken();
+            return await _userService.GetMyProgressDataAsync(currentUserId);
+        }
+
+        [HttpPost("add-my-progress")]
+        public async Task<IActionResult> AddMyProgressData([FromBody] AddMyProgressDataRequest request)
+        {
+            var currentUserId = GetUserIdFromToken();
+            await _userService.AddMyProgressDataAsync(currentUserId, request);
+            return Ok(new BaseResponseEmpty
+            {
+                Message = "Steps added!"
+            });
+        }
     }
 }

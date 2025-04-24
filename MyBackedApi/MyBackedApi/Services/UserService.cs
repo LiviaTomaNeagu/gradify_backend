@@ -539,5 +539,20 @@ namespace MyBackendApi.Services
             };
 
         }
+
+        public async Task<GetMyProgressDataResponse> GetMyProgressDataAsync(Guid currentUserId)
+        {
+            var currentStep = await _userRepository.GetCurrentStepAsync(currentUserId);
+
+            return new GetMyProgressDataResponse()
+            {
+                CurrentStep = currentStep
+            };
+        }
+
+        public async Task AddMyProgressDataAsync(Guid currentUserId, AddMyProgressDataRequest request)
+        {
+            await _userRepository.AddCurrentStepAsync(currentUserId, request.CurrentStep);
+        }
     }
 }

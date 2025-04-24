@@ -365,6 +365,24 @@ namespace MyBackendApi.Repositories
             return questionsAsked + answersGiven;
         }
 
+        public async Task<int> GetCurrentStepAsync(Guid currentUserId)
+        {
+            return await _context.Users
+                .Where(u => u.Id == currentUserId)
+                .Select(u => u.CompletedSteps)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task AddCurrentStepAsync(Guid currentUserId, int currentStep)
+        {
+            var user = await _context.Users.FindAsync(currentUserId);
+            if (user != null)
+            {
+                user.CompletedSteps = currentStep;
+                await _context.SaveChangesAsync();
+            }
+        }
+
 
     }
 }
