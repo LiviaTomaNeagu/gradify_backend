@@ -25,13 +25,10 @@ namespace MyBackedApi.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateEventRequest request)
+        public async Task<ActionResult<EventResponse>> Create([FromBody] CreateEventRequest request)
         {
             var created = await _service.CreateEvent(request);
-            return Ok(new BaseResponseEmpty
-            {
-                Message = "Event successfully created!"
-            });
+            return Ok(created);
         }
 
         [HttpGet("{id}")]
