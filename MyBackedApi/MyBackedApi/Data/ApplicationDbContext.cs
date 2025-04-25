@@ -19,6 +19,7 @@ namespace MyBackedApi.Data
         public DbSet<UserTopics> UsersTopics { get; set; }
         public DbSet<ChatMessage> ChatMessages { get; set; }
         public DbSet<Note> Notes { get; set; }
+        public DbSet<Event> Events { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
