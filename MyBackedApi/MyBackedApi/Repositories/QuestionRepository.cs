@@ -83,7 +83,7 @@ namespace MyBackendApi.Repositories
             return await _context.Questions
                 .Include(q => q.User)
                     .ThenInclude(u => u.Occupation)
-                .Where(q => q.Answers.Any(a => a.UserId == mentorId))
+                .Where(q => q.Answers.Any(a => a.UserId == mentorId) && q.UserId != mentorId)
                 .OrderByDescending(q => q.CreatedAt)
                 .Select(q => q.User)
                 .Distinct()
@@ -127,6 +127,7 @@ namespace MyBackendApi.Repositories
                 .ToListAsync();
 
             var mentors = answers
+                .Where(a => a.UserId != studentId)
                 .Select(a => a.User)
                 .Distinct()
                 .ToList();
@@ -161,4 +162,4 @@ namespace MyBackendApi.Repositories
         }
 
     }
-}   
+}

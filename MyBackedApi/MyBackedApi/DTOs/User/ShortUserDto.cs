@@ -11,6 +11,7 @@ namespace MyBackedApi.DTOs.User
         public string Email { get; set; }
         public RoleTypeEnum Role { get; set; }
         public bool IsApproved { get; set; }
+        public string AvatarUrl { get; set; }
 
         public Guid? OccupationId { get; set; }
         public Occupation Occupation { get; set; }

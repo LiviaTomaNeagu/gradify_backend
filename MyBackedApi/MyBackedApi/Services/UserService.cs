@@ -438,7 +438,8 @@ namespace MyBackendApi.Services
                 Specialization = user.StudentDetails.Specialization,
                 Group = user.StudentDetails.Group,
                 EnrollmentDate = user.StudentDetails.EnrollmentDate,
-                Id = user.StudentDetails.Id
+                Id = user.StudentDetails.Id,
+                AvatarUrl = user.AvatarUrl
             };
         }
 
@@ -525,7 +526,7 @@ namespace MyBackendApi.Services
             return new GetShortUsersResponse()
             {
                 Users = users
-                .Where(user => user.Id != currentUserId)
+                .Where(user => user.Id != currentUserId && user.Id.ToString() != "be408404-e8a2-4ca9-a184-a6f9863bd7c1")
                 .Select(user => user.ToShortUserDto()).ToList()
             };
         }
