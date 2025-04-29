@@ -44,7 +44,6 @@ namespace MyBackendApi.Controllers
             return Ok(tokenResponse);
         }
 
-        [Authorize]
         [HttpPost("logout")]
         public async Task<IActionResult> Logout(LogoutRequest logoutRequest)
         {
