@@ -13,6 +13,7 @@ namespace MyBackedApi.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public int CompletedSteps { get; set; }
         public bool IsApproved { get; set; }
+        public string AvatarUrl { get; set; }
 
         public Guid? OccupationId { get; set; }
         public Occupation Occupation { get; set; }

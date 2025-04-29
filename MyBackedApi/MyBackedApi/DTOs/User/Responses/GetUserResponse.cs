@@ -15,6 +15,7 @@ namespace MyBackendApi.Models.Responses
         public DateTime CreatedAt { get; set; }
         public bool IsApproved { get; set; }
         public GetStudentDetailsResponse? StudentDetails { get; set; }
+        public string AvatarUrl { get; set; }
     }
 
     public class GetStudentDetailsResponse

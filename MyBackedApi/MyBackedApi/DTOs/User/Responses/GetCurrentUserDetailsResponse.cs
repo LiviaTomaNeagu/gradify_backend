@@ -1,5 +1,6 @@
 ﻿using JWTRefreshToken.Models;
 using MyBackedApi.Enums;
+using MyBackedApi.Migrations;
 using MyBackedApi.Models;
 
 namespace MyBackedApi.DTOs.User.Responses
@@ -15,6 +16,7 @@ namespace MyBackedApi.DTOs.User.Responses
         public bool IsApproved { get; set; }
         public Guid? OccupationId { get; set; }
         public Occupation Occupation { get; set; }
+        public string AvatarUrl { get; set; }
     }
 
 }

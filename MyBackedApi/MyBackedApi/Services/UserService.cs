@@ -50,7 +50,8 @@ namespace MyBackendApi.Services
                 CompletedSteps = user.CompletedSteps,
                 OccupationName = user.Occupation.Name,
                 CreatedAt = user.CreatedAt,
-                IsApproved = user.IsApproved
+                IsApproved = user.IsApproved,
+                AvatarUrl = user.AvatarUrl
             }).ToList();
         }
 
@@ -70,7 +71,8 @@ namespace MyBackendApi.Services
                     CompletedSteps = user.CompletedSteps,
                     OccupationName = user.Occupation.Name,
                     CreatedAt = user.CreatedAt,
-                    IsApproved = user.IsApproved
+                    IsApproved = user.IsApproved,
+                    AvatarUrl = user.AvatarUrl
                 })
                 .OrderBy(u => u.IsApproved)
                 .ToList();
@@ -95,7 +97,8 @@ namespace MyBackendApi.Services
                 CompletedSteps = user.CompletedSteps,
                 OccupationName = user.Occupation.Name,
                 CreatedAt = user.CreatedAt,
-                IsApproved = user.IsApproved
+                IsApproved = user.IsApproved,
+                AvatarUrl = user.AvatarUrl
             }).ToList();
 
             return new()
@@ -118,7 +121,8 @@ namespace MyBackendApi.Services
                 CompletedSteps = user.CompletedSteps,
                 OccupationName = user.Occupation.Name,
                 CreatedAt = user.CreatedAt,
-                IsApproved = user.IsApproved
+                IsApproved = user.IsApproved,
+                AvatarUrl = user.AvatarUrl
             };
         }
 
@@ -255,7 +259,8 @@ namespace MyBackendApi.Services
                 Surname = currentUser.Surname,
                 Role = currentUser.Role,
                 OccupationId = currentUser.OccupationId,
-                Occupation = currentUser.Occupation
+                Occupation = currentUser.Occupation,
+                AvatarUrl = currentUser.AvatarUrl
             };
 
             return result;
@@ -299,7 +304,8 @@ namespace MyBackendApi.Services
                 CompletedSteps = user.CompletedSteps,
                 OccupationName = user.Occupation.Name,
                 CreatedAt = user.CreatedAt,
-                IsApproved = user.IsApproved
+                IsApproved = user.IsApproved,
+                AvatarUrl = user.AvatarUrl
             }).ToList();
 
 
@@ -450,7 +456,8 @@ namespace MyBackendApi.Services
                 OccupationName = user.Occupation.Name,
                 CreatedAt = user.CreatedAt,
                 IsApproved = user.IsApproved,
-                StudentDetails = user.StudentDetails.ToGetStudentDetailsResponse()
+                StudentDetails = user.StudentDetails.ToGetStudentDetailsResponse(),
+                AvatarUrl = user.AvatarUrl
             }).ToList();
 
 
@@ -553,6 +560,16 @@ namespace MyBackendApi.Services
         public async Task AddMyProgressDataAsync(Guid currentUserId, AddMyProgressDataRequest request)
         {
             await _userRepository.AddCurrentStepAsync(currentUserId, request.CurrentStep);
+        }
+
+        public async Task AddAvatarForUser(Guid currentUserId, string url)
+        {
+            await _userRepository.AddAvatarForUser(currentUserId, url);
+        }
+
+        public async Task<bool> RemoveAvatarForUser(Guid currentUserId)
+        {
+            return await _userRepository.RemoveAvatarForUser(currentUserId);
         }
     }
 }

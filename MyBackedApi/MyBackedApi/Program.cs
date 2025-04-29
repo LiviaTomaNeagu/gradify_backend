@@ -1,4 +1,5 @@
 using Infrastructure.Config;
+using Infrastructure.Config.Models;
 using Infrastructure.Middlewares;
 using Microsoft.EntityFrameworkCore;
 using MyBackedApi;
@@ -43,6 +44,7 @@ builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<ChatService>();
 builder.Services.AddScoped<NotesService>();
 builder.Services.AddScoped<EventsService>();
+builder.Services.AddScoped<S3Service>();
 
 // Add repositories to the container.
 builder.Services.AddScoped<BaseRepository>();
@@ -62,6 +64,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.Configure<AwsS3Settings>(builder.Configuration.GetSection("AwsS3Settings"));
 
 builder.Services.AddJwtAuthentication();
 builder.Services.AddAuthorization();
