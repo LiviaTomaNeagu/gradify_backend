@@ -52,6 +52,7 @@ namespace MyBackedApi.Services
                     Id = interactedUserId,
                     From = $"{interactedUser.Name} {interactedUser.Surname}",
                     Subject = "Conversation",
+                    Photo = interactedUser.AvatarUrl,
                     Chat = messages.Select(m => new ChatEntryDto
                     {
                         Type = m.SenderId == userId.ToString() ? "odd" : "even",

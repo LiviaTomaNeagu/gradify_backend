@@ -383,6 +383,26 @@ namespace MyBackendApi.Repositories
             }
         }
 
+        public async Task AddAvatarForUser(Guid currentUserId, string url)
+        {
+            var user = await _context.Users.FindAsync(currentUserId);
+            if (user != null)
+            {
+                user.AvatarUrl = url;
+                await _context.SaveChangesAsync();
+            }
+        }
 
+        public async Task<bool> RemoveAvatarForUser(Guid currentUserId)
+        {
+            var user = await _context.Users.FindAsync(currentUserId);
+            if (user != null && !string.IsNullOrEmpty(user.AvatarUrl))
+            {
+                user.AvatarUrl = string.Empty;
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            return false;
+        }
     }
 }

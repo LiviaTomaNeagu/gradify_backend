@@ -8,7 +8,7 @@ namespace Infrastructure.Config
         public static ConnectionStringsSettings ConnectionStrings { get; set; }
         public static JwtSettings JwtSettings { get; set; }
 
-        public static AwsSettings AwsSettings { get; set; }
+        public static AwsS3Settings AwsS3Settings { get; set; }
 
         public static SendGridSettings SendGridSettings { get; set; }
         public static ServerSettings ServerSettings { get; set; }
@@ -28,7 +28,7 @@ namespace Infrastructure.Config
 
 
             var awsSection = Configuration.GetSection("AWS");
-            AwsSettings = awsSection.Get<AwsSettings>();
+            AwsS3Settings = awsSection.Get<AwsS3Settings>();
 
             var sendGridSection = Configuration.GetSection("SendGrid");
             SendGridSettings = sendGridSection.Get<SendGridSettings>();

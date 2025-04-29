@@ -7,6 +7,7 @@ namespace MyBackedApi.DTOs.User.Responses
         public string Name { get; set; }
         public string Surname { get; set; }
         public string Email { get; set; }
+        public string AvatarUrl { get; set; }
 
     }
 }

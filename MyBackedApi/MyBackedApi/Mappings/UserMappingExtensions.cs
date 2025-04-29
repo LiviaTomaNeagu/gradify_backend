@@ -18,7 +18,8 @@ namespace MyBackendApi.Mappings
                 Role = user.Role,
                 IsApproved = user.IsApproved,
                 Occupation = user.Occupation,
-                OccupationId = user.OccupationId
+                OccupationId = user.OccupationId,
+                AvatarUrl = user.AvatarUrl
             };
         }
 
