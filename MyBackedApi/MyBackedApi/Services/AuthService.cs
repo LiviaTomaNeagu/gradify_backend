@@ -58,7 +58,8 @@ namespace MyBackendApi.Services
                 Surname = payload.Surname,
                 Email = payload.Email,
                 Role = payload.Role,
-                IsApproved = payload.Role == RoleTypeEnum.COORDINATOR ? true : false
+                IsApproved = payload.Role == RoleTypeEnum.COORDINATOR ? true : false,
+                AvatarUrl = string.Empty
             };
             user.Password = BCrypt.Net.BCrypt.HashPassword(payload.Password, 10);
 
@@ -141,6 +142,7 @@ namespace MyBackendApi.Services
             var response = new LoginResponse();
             response.AccessToken = GenerateToken(user, true);
             response.RefreshToken = GenerateToken(user, false);
+            response.Role = user.Role;
 
             await SaveRefreshTokenAsync(response.RefreshToken, user.Id);
 
