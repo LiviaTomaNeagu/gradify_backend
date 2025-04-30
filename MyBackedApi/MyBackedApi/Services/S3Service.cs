@@ -2,7 +2,9 @@
 using Amazon.S3.Model;
 using Amazon.S3.Transfer;
 using Infrastructure.Config.Models;
+using Infrastructure.Exceptions;
 using Microsoft.Extensions.Options;
+
 namespace MyBackedApi.Services
 {
 
@@ -55,6 +57,28 @@ namespace MyBackedApi.Services
             await _s3Client.DeleteObjectAsync(deleteObjectRequest);
         }
 
+        public async Task<List<string>> AddMultipleFilesAsync(List<IFormFile> files, string folder = "attachments")
+        {
+            if (files == null || files.Count == 0)
+                throw new WrongInputException("No files provided");
+
+            var uploadedUrls = new List<string>();
+
+            foreach (var file in files)
+            {
+                if (file.Length == 0)
+                    continue;
+
+                var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName).ToLower();
+                var contentType = file.ContentType;
+
+                await using var stream = file.OpenReadStream();
+                var url = await UploadFileAsync(stream, fileName, folder, contentType);
+                uploadedUrls.Add(url);
+            }
+
+            return uploadedUrls;
+        }
 
     }
 
