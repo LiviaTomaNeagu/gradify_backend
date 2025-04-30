@@ -141,6 +141,7 @@ namespace MyBackendApi.Services
             var response = new LoginResponse();
             response.AccessToken = GenerateToken(user, true);
             response.RefreshToken = GenerateToken(user, false);
+            response.Role = user.Role;
 
             await SaveRefreshTokenAsync(response.RefreshToken, user.Id);
 
