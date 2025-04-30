@@ -135,7 +135,8 @@ namespace MyBackendApi.Services
                 Email = user.Email,
                 Password = user.Password,
                 Role = user.Role,
-                OccupationId = user.OccupationId
+                OccupationId = user.OccupationId,
+                AvatarUrl = string.Empty
             };
 
             if (string.IsNullOrEmpty(user.Name))
@@ -199,7 +200,9 @@ namespace MyBackendApi.Services
                 Role = RoleTypeEnum.ADMIN_CORPORATE,
                 Password = BCrypt.Net.BCrypt.HashPassword(occupation.AdminEmail, 10),
                 IsApproved = true,
-                OccupationId = occupationId
+                OccupationId = occupationId,
+                AvatarUrl = string.Empty
+
             };
 
             await _userRepository.AddUserAsync(newUser);

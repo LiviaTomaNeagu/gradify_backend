@@ -58,7 +58,8 @@ namespace MyBackendApi.Services
                 Surname = payload.Surname,
                 Email = payload.Email,
                 Role = payload.Role,
-                IsApproved = payload.Role == RoleTypeEnum.COORDINATOR ? true : false
+                IsApproved = payload.Role == RoleTypeEnum.COORDINATOR ? true : false,
+                AvatarUrl = string.Empty
             };
             user.Password = BCrypt.Net.BCrypt.HashPassword(payload.Password, 10);
 
