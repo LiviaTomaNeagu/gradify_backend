@@ -365,24 +365,6 @@ namespace MyBackendApi.Repositories
             return questionsAsked + answersGiven;
         }
 
-        public async Task<int> GetCurrentStepAsync(Guid currentUserId)
-        {
-            return await _context.Users
-                .Where(u => u.Id == currentUserId)
-                .Select(u => u.CompletedSteps)
-                .FirstOrDefaultAsync();
-        }
-
-        public async Task AddCurrentStepAsync(Guid currentUserId, int currentStep)
-        {
-            var user = await _context.Users.FindAsync(currentUserId);
-            if (user != null)
-            {
-                user.CompletedSteps = currentStep;
-                await _context.SaveChangesAsync();
-            }
-        }
-
         public async Task AddAvatarForUser(Guid currentUserId, string url)
         {
             var user = await _context.Users.FindAsync(currentUserId);
@@ -403,6 +385,27 @@ namespace MyBackendApi.Repositories
                 return true;
             }
             return false;
+        }
+
+        public async Task<string> GetKanbanAsync(Guid currentUserId)
+        {
+            var studentDetails = await _context.StudentDetails.Where(sd => sd.UserId == currentUserId).FirstAsync();
+            if (studentDetails != null)
+            {
+                return studentDetails.Kanban;
+            }
+            return string.Empty;
+
+        }
+
+        public async Task AddKanbanAsync(Guid currentUserId, string kanban)
+        {
+            var studentDetails = await _context.StudentDetails.Where(sd => sd.UserId == currentUserId).FirstAsync();
+            if (studentDetails != null && !string.IsNullOrEmpty(kanban))
+            {
+                studentDetails.Kanban = kanban;
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }

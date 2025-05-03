@@ -11,7 +11,6 @@ namespace MyBackedApi.DTOs.User.Responses
         public string Email { get; set; }
         public RoleTypeEnum Role { get; set; }
         public int TotalDays { get; set; }
-        public int CompletedSteps { get; set; }
         public string OccupationName { get; set; }
         public int Interactions { get; set; }
         public int UsersInteractedWith { get; set; }
