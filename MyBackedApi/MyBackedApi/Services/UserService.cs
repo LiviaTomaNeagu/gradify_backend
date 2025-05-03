@@ -434,6 +434,7 @@ namespace MyBackendApi.Services
                 Email = user.Email,
                 Faculty = user.StudentDetails.Faculty,
                 Specialization = user.StudentDetails.Specialization,
+                GroupId = user.StudentDetails.GroupId,
                 Group = user.StudentDetails.Group,
                 EnrollmentDate = user.StudentDetails.EnrollmentDate,
                 Id = user.StudentDetails.Id,

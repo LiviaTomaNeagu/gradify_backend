@@ -21,7 +21,7 @@ namespace MyBackendApi.Models.Responses
     {
         public string Faculty { get; set; } = string.Empty;
         public string Specialization { get; set; } = string.Empty;
-        public string Group { get; set; } = string.Empty;
+        public Group Group { get; set; }
         public DateTime EnrollmentDate { get; set; }
     }
 }
