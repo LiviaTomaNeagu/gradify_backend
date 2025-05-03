@@ -87,6 +87,9 @@ namespace MyBackedApi.Data
                 .WithMany()
                 .HasForeignKey(n => n.StudentId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Event>()
+                .ToTable("events");
         }
 
     }

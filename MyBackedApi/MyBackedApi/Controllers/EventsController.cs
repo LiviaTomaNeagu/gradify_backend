@@ -20,22 +20,23 @@ namespace MyBackedApi.Controllers
         [HttpGet]
         public async Task<ActionResult<List<EventResponse>>> GetAll()
         {
-            var events = await _service.GetAllEvents();
+            var currentUserId = GetUserIdFromToken();
+            var events = await _service.GetAllEvents(currentUserId);
             return Ok(events);
         }
 
         [HttpPost]
         public async Task<ActionResult<EventResponse>> Create([FromBody] CreateEventRequest request)
         {
-            var created = await _service.CreateEvent(request);
+            var currentUserId = GetUserIdFromToken();
+            var created = await _service.CreateEvent(request, currentUserId);
             return Ok(created);
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<EventResponse>> GetById([FromRoute] Guid id)
         {
-            var events = await _service.GetAllEvents();
-            var ev = events.FirstOrDefault(e => e.Id == id);
+            var ev = await _service.GetEventById(id);
             if (ev == null) return NotFound();
             return Ok(ev);
         }

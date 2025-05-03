@@ -2,32 +2,55 @@
 using MyBackedApi.DTOs.Calendar.Responses;
 using MyBackedApi.Models;
 using MyBackedApi.Repositories;
+using MyBackendApi.Repositories;
 
 namespace MyBackedApi.Services
 {
     public class EventsService
     {
         private readonly EventsRepository _repo;
+        private readonly UserRepository _userRepo;
 
-        public EventsService(EventsRepository repo)
+        public EventsService(EventsRepository repo,
+            UserRepository userRepository)
         {
             _repo = repo;
+            _userRepo = userRepository;
         }
 
-        public async Task<List<EventResponse>> GetAllEvents()
+        public async Task<List<EventResponse>> GetAllEvents(Guid currentUserId)
         {
-            var events = await _repo.GetAllAsync();
+            var user = await _userRepo.GetUserByIdAsync(currentUserId);
+
+
+            if(user.Role == Enums.RoleTypeEnum.STUDENT)
+            {
+                Guid coordinatorId = await _userRepo.GetCoordinatorForStudent(currentUserId);
+                var studentEvents = await _repo.GetEventsByCoordinatorIdAsync(coordinatorId);
+                return studentEvents.Select(e => new EventResponse
+                {
+                    Id = e.Id,
+                    Title = e.Title,
+                    ColorPrimary = e.ColorPrimary,
+                    Start = e.Start,
+                    End = e.End,
+                    CoordinatorId = e.CoordinatorId
+                }).ToList();
+            }
+
+            var events = await _repo.GetEventsByCoordinatorIdAsync(currentUserId);
             return events.Select(e => new EventResponse
             {
                 Id = e.Id,
                 Title = e.Title,
                 ColorPrimary = e.ColorPrimary,
                 Start = e.Start,
-                End = e.End
+                End = e.End,
+                CoordinatorId = e.CoordinatorId
             }).ToList();
         }
 
-        public async Task<EventResponse> CreateEvent(CreateEventRequest dto)
+        public async Task<EventResponse> CreateEvent(CreateEventRequest dto, Guid currentUserId)
         {
             var ev = new Event
             {
@@ -35,7 +58,8 @@ namespace MyBackedApi.Services
                 Title = dto.Title,
                 ColorPrimary = dto.ColorPrimary,
                 Start = dto.Start,
-                End = dto.End
+                End = dto.End,
+                CoordinatorId = currentUserId
             };
             await _repo.AddAsync(ev);
             return new EventResponse
@@ -44,7 +68,8 @@ namespace MyBackedApi.Services
                 Title = ev.Title,
                 ColorPrimary = ev.ColorPrimary,
                 Start = ev.Start,
-                End = ev.End
+                End = ev.End,
+                CoordinatorId = currentUserId
             };
         }
 
@@ -71,8 +96,14 @@ namespace MyBackedApi.Services
                 Title = updated.Title,
                 ColorPrimary = updated.ColorPrimary,
                 Start = updated.Start,
-                End = updated.End
+                End = updated.End,
+                CoordinatorId = existing.CoordinatorId
             };
+        }
+
+        public async Task<Event> GetEventById(Guid id)
+        {
+            return await _repo.GetByIdAsync(id);
         }
     }
 }

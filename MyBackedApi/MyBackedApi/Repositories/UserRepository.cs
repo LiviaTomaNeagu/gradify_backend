@@ -407,5 +407,11 @@ namespace MyBackendApi.Repositories
                 await _context.SaveChangesAsync();
             }
         }
+
+        public async Task<Guid> GetCoordinatorForStudent(Guid currentUserId)
+        {
+            var student_coordinator = await _context.Student_Coordinators.Where(sc => sc.StudentId == currentUserId).FirstAsync();
+            return student_coordinator.CoordinatorId;
+        }
     }
 }
