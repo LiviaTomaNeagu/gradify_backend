@@ -14,5 +14,6 @@ namespace MyBackedApi.DTOs.Forum.Responses
         public string Surname { get; set; }
         public string OccupationName { get; set; }
         public TopicEnum Topic { get; set; }
+        public List<AttachmentsDto> Attachments { get; set; } = new();
     }
 }

@@ -22,15 +22,14 @@ namespace MyBackendApi.Services
             {
                 Id = Guid.NewGuid(),
                 Title = request.Title,
-                Content = request.DescriptionHtml == null ? request.DescriptionHtml : string.Empty,
+                Content = request.DescriptionHtml != null ? request.DescriptionHtml : string.Empty,
                 CreatedAt = DateTime.UtcNow,
                 UserId = currentUserId,
                 Topic = request.Topic.KeyToTopicEnum()
             };
 
-            Console.WriteLine("Here we will add the question to db");
 
-            //await _questionRepository.AddQuestionAsync(question);
+            await _questionRepository.AddQuestionAsync(question);
             return question;
         }
 
@@ -81,9 +80,5 @@ namespace MyBackendApi.Services
             return questions.Select(q => q.ToRelatedQuestionResponse()).ToList();
         }
 
-        public async Task AttachFilesToQuestion(Guid id, List<string> urls)
-        {
-            Console.WriteLine("Here we will add the files to question");
-        }
     }
 }
