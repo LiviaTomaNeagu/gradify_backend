@@ -47,7 +47,6 @@ namespace MyBackendApi.Services
                 Surname = user.Surname,
                 Email = user.Email,
                 Role = user.Role,
-                CompletedSteps = user.CompletedSteps,
                 OccupationName = user.Occupation.Name,
                 CreatedAt = user.CreatedAt,
                 IsApproved = user.IsApproved,
@@ -68,7 +67,6 @@ namespace MyBackendApi.Services
                     Surname = user.Surname,
                     Email = user.Email,
                     Role = user.Role,
-                    CompletedSteps = user.CompletedSteps,
                     OccupationName = user.Occupation.Name,
                     CreatedAt = user.CreatedAt,
                     IsApproved = user.IsApproved,
@@ -94,7 +92,6 @@ namespace MyBackendApi.Services
                 Surname = user.Surname,
                 Email = user.Email,
                 Role = user.Role,
-                CompletedSteps = user.CompletedSteps,
                 OccupationName = user.Occupation.Name,
                 CreatedAt = user.CreatedAt,
                 IsApproved = user.IsApproved,
@@ -118,7 +115,6 @@ namespace MyBackendApi.Services
                 Surname = user.Surname,
                 Email = user.Email,
                 Role = user.Role,
-                CompletedSteps = user.CompletedSteps,
                 OccupationName = user.Occupation.Name,
                 CreatedAt = user.CreatedAt,
                 IsApproved = user.IsApproved,
@@ -304,7 +300,6 @@ namespace MyBackendApi.Services
                 Surname = user.Surname,
                 Email = user.Email,
                 Role = user.Role,
-                CompletedSteps = user.CompletedSteps,
                 OccupationName = user.Occupation.Name,
                 CreatedAt = user.CreatedAt,
                 IsApproved = user.IsApproved,
@@ -456,7 +451,6 @@ namespace MyBackendApi.Services
                 Surname = user.Surname,
                 Email = user.Email,
                 Role = user.Role,
-                CompletedSteps = user.CompletedSteps,
                 OccupationName = user.Occupation.Name,
                 CreatedAt = user.CreatedAt,
                 IsApproved = user.IsApproved,
@@ -509,7 +503,6 @@ namespace MyBackendApi.Services
                 Surname = user.Surname,
                 Email = user.Email,
                 Role = user.Role,
-                CompletedSteps = user.CompletedSteps,
                 OccupationName = user.Occupation.Name,
                 Topics = user.UserTopics.ToTopicEnumList(),
                 TotalDays = (DateTime.UtcNow - user.CreatedAt).Days,
@@ -553,17 +546,17 @@ namespace MyBackendApi.Services
 
         public async Task<GetMyProgressDataResponse> GetMyProgressDataAsync(Guid currentUserId)
         {
-            var currentStep = await _userRepository.GetCurrentStepAsync(currentUserId);
+            var kanban = await _userRepository.GetKanbanAsync(currentUserId);
 
             return new GetMyProgressDataResponse()
             {
-                CurrentStep = currentStep
+                Kanban = kanban
             };
         }
 
         public async Task AddMyProgressDataAsync(Guid currentUserId, AddMyProgressDataRequest request)
         {
-            await _userRepository.AddCurrentStepAsync(currentUserId, request.CurrentStep);
+            await _userRepository.AddKanbanAsync(currentUserId, request.Kanban);
         }
 
         public async Task AddAvatarForUser(Guid currentUserId, string url)

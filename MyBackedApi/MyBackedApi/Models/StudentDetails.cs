@@ -12,6 +12,7 @@ namespace MyBackedApi.Models
         public string Group { get; set; } = string.Empty;
 
         public DateTime EnrollmentDate { get; set; } = DateTime.UtcNow;
+        public string Kanban { get; set; }
 
         public Guid UserId { get; set; }
         public User User { get; set; } = null!;

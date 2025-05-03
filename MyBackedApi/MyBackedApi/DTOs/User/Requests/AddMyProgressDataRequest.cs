@@ -2,6 +2,6 @@
 {
     public class AddMyProgressDataRequest
     {
-        public int CurrentStep { get; set; }
+        public string Kanban { get; set; }
     }
 }

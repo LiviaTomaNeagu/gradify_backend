@@ -11,7 +11,6 @@ namespace MyBackedApi.Models
         public string Password { get; set; }
         public RoleTypeEnum Role { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public int CompletedSteps { get; set; }
         public bool IsApproved { get; set; }
         public string AvatarUrl { get; set; }
 
