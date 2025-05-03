@@ -1,5 +1,6 @@
 ﻿using MyBackedApi.DTOs.Forum.Requests;
 using MyBackedApi.DTOs.Forum.Responses;
+using MyBackedApi.Extensions;
 using MyBackedApi.Mappings;
 using MyBackedApi.Models;
 using MyBackendApi.Repositories;
@@ -15,17 +16,18 @@ namespace MyBackendApi.Services
             _questionRepository = questionRepository;
         }
 
-        public async Task<Question> AddQuestionAsync(AddQuestionRequest request)
+        public async Task<Question> AddQuestionAsync(AddQuestionRequest request, Guid currentUserId)
         {
             var question = new Question
             {
                 Id = Guid.NewGuid(),
                 Title = request.Title,
-                Content = request.Content,
+                Content = request.DescriptionHtml != null ? request.DescriptionHtml : string.Empty,
                 CreatedAt = DateTime.UtcNow,
-                UserId = request.UserId,
-                Topic = request.Topic
+                UserId = currentUserId,
+                Topic = request.Topic.KeyToTopicEnum()
             };
+
 
             await _questionRepository.AddQuestionAsync(question);
             return question;

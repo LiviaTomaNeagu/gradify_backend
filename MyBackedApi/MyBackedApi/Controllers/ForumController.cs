@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using MyBackedApi.DTOs.Forum.Requests;
 using MyBackedApi.DTOs.Forum.Responses;
+using MyBackedApi.Services;
 using MyBackendApi.Services;
 
 namespace MyBackendApi.Controllers
@@ -12,20 +13,30 @@ namespace MyBackendApi.Controllers
     {
         private readonly QuestionService _questionService;
         private readonly AnswerService _answerService;
+        private readonly S3Service _s3Service;
 
-        public ForumController(QuestionService questionService, AnswerService answerService)
+        public ForumController(QuestionService questionService, AnswerService answerService, S3Service s3Service)
         {
             _questionService = questionService;
             _answerService = answerService;
+            _s3Service = s3Service;
         }
 
 
         [HttpPost("questions/add")]
-        public async Task<IActionResult> AddQuestion([FromBody] AddQuestionRequest request)
+        public async Task<IActionResult> AddQuestion([FromForm] AddQuestionRequest payload, [FromForm] List<IFormFile> attachments)
         {
-            var question = await _questionService.AddQuestionAsync(request);
-            return CreatedAtAction(nameof(GetQuestionById), new { id = question.Id }, question);
+            var currentUserId = GetUserIdFromToken();
+            var question = await _questionService.AddQuestionAsync(payload, currentUserId);
+
+            if (attachments != null && attachments.Any())
+            {
+                var urls = await _s3Service.AddMultipleFilesAsync(attachments, "attachments/" + question.Id.ToString());
+            }
+
+            return Ok(new BaseResponseEmpty { Message = "Question added!" });
         }
+
 
 
 
@@ -53,6 +64,7 @@ namespace MyBackendApi.Controllers
         public async Task<GetQuestionDetailsResponse> GetQuestionDetails(Guid questionId)
         {
             var answers = await _questionService.GetQuestionDetails(questionId);
+            await _s3Service.AddFilesToQuestionDetails(answers);
             return answers;
         }
 
