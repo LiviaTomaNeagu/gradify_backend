@@ -20,6 +20,7 @@ namespace MyBackedApi.Data
         public DbSet<ChatMessage> ChatMessages { get; set; }
         public DbSet<Note> Notes { get; set; }
         public DbSet<Event> Events { get; set; }
+        public DbSet<Group> Groups { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -72,6 +73,12 @@ namespace MyBackedApi.Data
                 .HasForeignKey<StudentDetails>(sd => sd.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            modelBuilder.Entity<StudentDetails>()
+                .HasOne(sd => sd.Group)
+                .WithMany()
+                .HasForeignKey(sd => sd.GroupId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             modelBuilder.Entity<UserTopics>()
                 .ToTable("user_topics")
                 .HasOne(ut => ut.User)
@@ -90,6 +97,9 @@ namespace MyBackedApi.Data
 
             modelBuilder.Entity<Event>()
                 .ToTable("events");
+
+            modelBuilder.Entity<Group>()
+                .ToTable("groups");
         }
 
     }

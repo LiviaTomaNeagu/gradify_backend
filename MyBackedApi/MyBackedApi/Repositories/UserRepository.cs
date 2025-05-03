@@ -302,10 +302,11 @@ namespace MyBackendApi.Repositories
             {
                 Faculty = "Facultatea de Matematică și Informatică",
                 Specialization = addStudentDetails.Specialization,
-                Group = addStudentDetails.Group,
+                GroupId = addStudentDetails.GroupId,
                 EnrollmentDate = DateTime.UtcNow,
                 User = student,
-                UserId = student.Id
+                UserId = student.Id,
+                Kanban = string.Empty
             };
 
             _context.StudentDetails.Add(studentDetails);

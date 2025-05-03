@@ -9,7 +9,8 @@ namespace MyBackedApi.Models
 
         public string Specialization { get; set; } = string.Empty;
 
-        public string Group { get; set; } = string.Empty;
+        public Guid? GroupId { get; set; }
+        public Group? Group { get; set; }
 
         public DateTime EnrollmentDate { get; set; } = DateTime.UtcNow;
         public string Kanban { get; set; }
