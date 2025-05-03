@@ -43,5 +43,12 @@ namespace MyBackedApi.Repositories
                 await _context.SaveChangesAsync();
             }
         }
+
+        public async Task<List<Event>> GetEventsByCoordinatorIdAsync(Guid coordinatorId)
+        {
+            return await _context.Events
+                .Where(e => e.CoordinatorId == coordinatorId)
+                .ToListAsync();
+        }
     }
 }
