@@ -1,10 +1,12 @@
 ﻿using Infrastructure.Base;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyBackedApi.DTOs.Chat.Responses;
 using MyBackedApi.Services;
 
 namespace MyBackedApi.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/chat")]
     public class ChatController : BaseApiController

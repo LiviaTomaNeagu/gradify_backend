@@ -1,4 +1,5 @@
 ﻿using Infrastructure.Base;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyBackedApi.DTOs.Calendar.Requests;
 using MyBackedApi.DTOs.Calendar.Responses;
@@ -6,6 +7,7 @@ using MyBackedApi.Services;
 
 namespace MyBackedApi.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/events")]
     public class EventsController : BaseApiController
@@ -25,6 +27,7 @@ namespace MyBackedApi.Controllers
             return Ok(events);
         }
 
+        [Authorize(Roles = "COORDINATOR")]
         [HttpPost]
         public async Task<ActionResult<EventResponse>> Create([FromBody] CreateEventRequest request)
         {
@@ -41,6 +44,7 @@ namespace MyBackedApi.Controllers
             return Ok(ev);
         }
 
+        [Authorize(Roles = "COORDINATOR")]
         [HttpPut("{id}")]
         public async Task<ActionResult<EventResponse>> Update([FromRoute] Guid id, [FromBody] EventResponse updatedEvent)
         {
@@ -51,6 +55,7 @@ namespace MyBackedApi.Controllers
             return Ok(updated);
         }
 
+        [Authorize(Roles = "COORDINATOR")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete([FromRoute] Guid id)
         {

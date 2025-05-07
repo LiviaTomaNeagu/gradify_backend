@@ -1,4 +1,5 @@
 ﻿using Infrastructure.Base;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyBackedApi.DTOs.User.Requests;
 using MyBackedApi.DTOs.User.Responses;
@@ -7,6 +8,7 @@ using MyBackendApi.Services;
 
 namespace MyBackendApi.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/users")]
     public class UserController : BaseApiController

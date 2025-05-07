@@ -1,10 +1,12 @@
 ﻿using Infrastructure.Base;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyBackedApi.DTOs;
 using MyBackedApi.Services;
 
 namespace MyBackedApi.Controllers
 {
+    [Authorize(Roles = "STUDENT")]
     [ApiController]
     [Route("api/notes")]
     public class NotesController : BaseApiController

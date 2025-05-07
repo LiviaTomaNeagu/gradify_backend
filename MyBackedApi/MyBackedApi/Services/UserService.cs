@@ -303,7 +303,8 @@ namespace MyBackendApi.Services
                 OccupationName = user.Occupation.Name,
                 CreatedAt = user.CreatedAt,
                 IsApproved = user.IsApproved,
-                AvatarUrl = user.AvatarUrl
+                AvatarUrl = user.AvatarUrl,
+                StudentDetails = user.StudentDetails.ToGetStudentDetailsResponse()
             }).ToList();
 
 
