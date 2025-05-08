@@ -46,6 +46,7 @@ builder.Services.AddScoped<NotesService>();
 builder.Services.AddScoped<EventsService>();
 builder.Services.AddScoped<S3Service>();
 builder.Services.AddScoped<GroupService>();
+builder.Services.AddScoped<QuestionSimilarityService>();
 
 // Add repositories to the container.
 builder.Services.AddScoped<BaseRepository>();

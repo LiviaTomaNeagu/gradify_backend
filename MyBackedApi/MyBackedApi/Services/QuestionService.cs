@@ -3,6 +3,7 @@ using MyBackedApi.DTOs.Forum.Responses;
 using MyBackedApi.Extensions;
 using MyBackedApi.Mappings;
 using MyBackedApi.Models;
+using MyBackedApi.Services;
 using MyBackendApi.Repositories;
 
 namespace MyBackendApi.Services
@@ -10,10 +11,12 @@ namespace MyBackendApi.Services
     public class QuestionService
     {
         private readonly QuestionRepository _questionRepository;
+        private readonly QuestionSimilarityService _similarityService;
 
-        public QuestionService(QuestionRepository questionRepository)
+        public QuestionService(QuestionRepository questionRepository, QuestionSimilarityService questionSimilarityService)
         {
             _questionRepository = questionRepository;
+            _similarityService = questionSimilarityService;
         }
 
         public async Task<Question> AddQuestionAsync(AddQuestionRequest request, Guid currentUserId)
@@ -57,27 +60,25 @@ namespace MyBackendApi.Services
             return question?.ToGetQuestionDetailsResponse();
         }
 
+
         public async Task<List<GetRelatedQuestionResponse>> GetRelatedQuestionsAsync(GetRelatedQuestionRequest payload)
         {
-            var stopWords = new HashSet<string>
-            {
-                "how", "and", "is", "done", "the", "a", "an", "in", "on", "at", "to", "for", "with", "by", "of", "this", "that", "it", "from"
-            };
+            var allQuestions = await _questionRepository.GetAllQuestionsForSimilarityAsync();
 
-            var searchWords = payload.Content
-                .Split(new[] { ' ', ',', '.', '!', '?' }, StringSplitOptions.RemoveEmptyEntries)
-                .Select(w => w.ToLower())
-                .Where(w => !stopWords.Contains(w))
+            _similarityService.LoadQuestions(allQuestions);
+
+            var similar = _similarityService.GetSimilarQuestions(payload.Content)
+                .Where(q => q.Score > 0.05)
+                .Take(10)
+                .Select(q => q.Id)
                 .ToList();
 
-            var questions = await _questionRepository.GetRelatedQuestionsAsync(searchWords);
+            var finalQuestions = allQuestions
+                .Where(q => similar.Contains(q.Id))
+                .ToList();
 
-            if (questions == null || !questions.Any())
-            {
-                return new List<GetRelatedQuestionResponse>();
-            }
+            return finalQuestions.Select(q => q.ToRelatedQuestionResponse()).ToList();
 
-            return questions.Select(q => q.ToRelatedQuestionResponse()).ToList();
         }
 
     }
