@@ -570,5 +570,18 @@ namespace MyBackendApi.Services
         {
             return await _userRepository.RemoveAvatarForUser(currentUserId);
         }
+
+        public async Task<string> GetUserNameByIdAsync(string senderId)
+        {
+            if (Guid.TryParse(senderId, out var userIdGuid))
+            {
+                var user = await _userRepository.GetUserByIdAsync(userIdGuid);
+                return user.Name + " " + user.Surname;
+            }
+            else
+            {
+                throw new ResourceMissingException("Not a valid id!");
+            }
+        }
     }
 }

@@ -1,9 +1,13 @@
 ﻿using Google.Protobuf;
+using Microsoft.AspNetCore.SignalR;
 using MyBackedApi.Data;
 using MyBackedApi.DTOs.Chat.Responses;
+using MyBackedApi.Enums;
+using MyBackedApi.Hubs;
 using MyBackedApi.Models;
 using MyBackedApi.Repositories;
 using MyBackendApi.Repositories;
+using MyBackendApi.Services;
 using System;
 
 namespace MyBackedApi.Services
@@ -15,7 +19,7 @@ namespace MyBackedApi.Services
 
         public ChatService(
             ChatRepository chatRepository,
-            UserRepository userRepository)
+            UserRepository userRepository )
         {
             _chatRepository = chatRepository;
             _userRepository = userRepository;

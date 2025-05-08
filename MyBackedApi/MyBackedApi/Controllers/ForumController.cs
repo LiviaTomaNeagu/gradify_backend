@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using MyBackedApi.DTOs.Forum.Requests;
 using MyBackedApi.DTOs.Forum.Responses;
+using MyBackedApi.Enums;
 using MyBackedApi.Hubs;
 using MyBackedApi.Models;
 using MyBackedApi.Services;
@@ -86,8 +87,10 @@ namespace MyBackendApi.Controllers
             {
                 await _hubContext.Clients.Client(connectionId).SendAsync("ReceiveNotification", new
                 {
-                    Title = "Răspuns Nou!",
-                    Message = $"{answer.User.Name} {answer.User.Surname} ți-a răspuns la întrebare."
+                    Title = "New answer!",
+                    Message = $"{answer.User.Name} {answer.User.Surname} answered your question.",
+                    QuestionId = questionId,
+                    Type = NotificationTypeEnum.FORUM
                 });
             }
 
