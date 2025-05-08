@@ -49,6 +49,19 @@ namespace MyBackendApi.Repositories
             return (questions, totalQuestions);
         }
 
+        public async Task<List<Question>> GetAllQuestionsForSimilarityAsync()
+        {
+            return await _context.Questions
+                .Select(q => new Question
+                {
+                    Id = q.Id,
+                    Title = q.Title,
+                    Content = q.Content,
+                    Topic = q.Topic
+                })
+                .ToListAsync();
+        }
+
 
 
         public async Task<Question?> GetQuestionByIdAsync(Guid id)

@@ -1,4 +1,5 @@
 ﻿using Infrastructure.Base;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyBackedApi.DTOs.Forum.Requests;
 using MyBackedApi.DTOs.Forum.Responses;
@@ -7,6 +8,7 @@ using MyBackendApi.Services;
 
 namespace MyBackendApi.Controllers
 {
+    [Authorize(Roles = "STUDENT, MENTOR, COORDINATOR, ADMIN_CORPORATE")]
     [ApiController]
     [Route("api/forum")]
     public class ForumController : BaseApiController

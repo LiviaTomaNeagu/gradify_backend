@@ -3,9 +3,11 @@ using Microsoft.AspNetCore.Mvc;
 using MyBackedApi.Services;
 using MyBackedApi.Models;
 using MyBackedApi.DTOs;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MyBackedApi.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/groups")]
     public class GroupController : BaseApiController

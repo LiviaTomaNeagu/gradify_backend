@@ -22,7 +22,9 @@ namespace MyBackedApi.Services
                 Title = n.Title,
                 Color = n.Color,
                 Datef = n.Datef
-            }).ToList();
+            })
+                .OrderByDescending(n => n.Datef)
+                .ToList();
         }
 
         public async Task<NoteDto> CreateNote(CreateNoteDto dto, Guid studentId)
@@ -32,7 +34,7 @@ namespace MyBackedApi.Services
                 Id = Guid.NewGuid(),
                 Title = dto.Title,
                 Color = dto.Color,
-                Datef = dto.Datef,
+                Datef = DateTime.UtcNow,
                 StudentId = studentId
             };
             await _repo.AddAsync(note);
@@ -43,12 +45,12 @@ namespace MyBackedApi.Services
 
         public async Task<NoteDto> UpdateNote(NoteDto dto)
         {
-            var existing = await _repo.GetByIdAsync(dto.Id); // adaugă acest method în repo dacă nu-l ai
+            var existing = await _repo.GetByIdAsync(dto.Id);
             if (existing == null) throw new Exception("Note not found");
 
             existing.Title = dto.Title;
             existing.Color = dto.Color;
-            existing.Datef = dto.Datef;
+            existing.Datef = DateTime.UtcNow;
 
             var updated = await _repo.UpdateAsync(existing);
             return new NoteDto

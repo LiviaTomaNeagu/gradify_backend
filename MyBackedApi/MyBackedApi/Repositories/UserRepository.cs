@@ -3,6 +3,7 @@ using MyBackedApi.Data;
 using MyBackedApi.DTOs.User.Requests;
 using MyBackedApi.Enums;
 using MyBackedApi.Models;
+using System.Data;
 
 namespace MyBackendApi.Repositories
 {
@@ -142,7 +143,15 @@ namespace MyBackendApi.Repositories
             var query = _context.Users
                 .Include(u => u.Occupation)
                 .Where(u => u.Role == payload.Role)
-                .AsQueryable();
+            .AsQueryable();
+
+            if (payload.Role == RoleTypeEnum.STUDENT) // presupun că ai un enum Role cu Student
+            {
+                query = query
+                    .Include(u => u.StudentDetails)
+                        .ThenInclude(sd => sd.Group);
+            }
+
 
             var totalUsers = await query.CountAsync();
 
@@ -209,6 +218,7 @@ namespace MyBackendApi.Repositories
             var query = _context.Users
                 .Include(u => u.Occupation)
                 .Include(u => u.StudentDetails)
+                    .ThenInclude(sd => sd.Group)
                 .Where(u => u.Role == payload.Role
                     && _context.Student_Coordinators.Any(sc => sc.StudentId == u.Id && sc.CoordinatorId == currentUserId))
                 .AsQueryable();

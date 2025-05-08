@@ -1,4 +1,5 @@
 ﻿using Infrastructure.Base;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyBackedApi.DTOs.Coordinator.Responses;
 using MyBackedApi.DTOs.User;
@@ -9,7 +10,7 @@ using MyBackendApi.Services;
 
 namespace MyBackedApi.Controllers
 {
-
+    [Authorize(Roles = "COORDINATOR")]
     [ApiController]
     [Route("api/coordinator")]
     public class CoordinatorController : BaseApiController

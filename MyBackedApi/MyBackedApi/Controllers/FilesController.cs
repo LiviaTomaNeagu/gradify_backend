@@ -1,5 +1,6 @@
 ﻿using Infrastructure.Base;
 using Infrastructure.Exceptions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyBackedApi.DTOs.Files.Responses;
 using MyBackedApi.Services;
@@ -10,7 +11,7 @@ using SixLabors.ImageSharp.Processing;
 
 namespace MyBackedApi.Controllers
 {
-
+    [Authorize]
     [ApiController]
     [Route("api/files")]
     public class FilesController : BaseApiController
