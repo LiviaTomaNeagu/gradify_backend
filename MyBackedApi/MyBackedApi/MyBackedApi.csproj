@@ -24,4 +24,8 @@
     <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="DTOs\Notifications\Responses\" />
+  </ItemGroup>
+
 </Project>

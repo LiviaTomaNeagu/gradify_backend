@@ -21,6 +21,7 @@ namespace MyBackedApi.Data
         public DbSet<Note> Notes { get; set; }
         public DbSet<Event> Events { get; set; }
         public DbSet<Group> Groups { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -100,6 +101,9 @@ namespace MyBackedApi.Data
 
             modelBuilder.Entity<Group>()
                 .ToTable("groups");
+
+            modelBuilder.Entity<Notification>()
+                .ToTable("notifications");
         }
 
     }
