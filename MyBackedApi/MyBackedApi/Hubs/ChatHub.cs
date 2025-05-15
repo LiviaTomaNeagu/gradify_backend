@@ -1,18 +1,25 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using MyBackedApi.DTOs;
+using MyBackedApi.Enums;
 using MyBackedApi.Models;
 using MyBackedApi.Services;
-using static MyBackedApi.DTOs.MessagePayload;
+using MyBackendApi.Services;
 
 namespace MyBackedApi.Hubs
 {
     public class ChatHub : Hub
     {
         private ChatService _chatService;
+        private UserService _userService;
+        private readonly IHubContext<NotificationHub> _notificationHub;
 
-        public ChatHub(ChatService chatService)
+        public ChatHub(ChatService chatService,
+            UserService userService,
+            IHubContext<NotificationHub> notificationHub)
         {
             _chatService = chatService;
+            _userService = userService;
+            _notificationHub = notificationHub;
         }
 
         public override Task OnConnectedAsync()
@@ -70,6 +77,7 @@ namespace MyBackedApi.Hubs
                     SentAt = DateTime.UtcNow
                 };
 
+                var userName = await _userService.GetUserNameByIdAsync(senderId);
                 await _chatService.SaveMessage(chatMessage);
 
                 if (ConnectedUsers.UserConnections.TryGetValue(message.Id, out var connectionId))

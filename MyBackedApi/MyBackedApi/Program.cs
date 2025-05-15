@@ -47,6 +47,8 @@ builder.Services.AddScoped<EventsService>();
 builder.Services.AddScoped<S3Service>();
 builder.Services.AddScoped<GroupService>();
 builder.Services.AddScoped<QuestionSimilarityService>();
+builder.Services.AddScoped<NotificationsService>();
+
 
 // Add repositories to the container.
 builder.Services.AddScoped<BaseRepository>();
@@ -61,6 +63,7 @@ builder.Services.AddScoped<ChatRepository>();
 builder.Services.AddScoped<NotesRepository>();
 builder.Services.AddScoped<EventsRepository>();
 builder.Services.AddScoped<GroupRepository>();
+builder.Services.AddScoped<NotificationsRepository>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -99,5 +102,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.MapHub<ChatHub>("/chatHub");
+app.MapHub<NotificationHub>("/notificationHub");
 
 app.Run();

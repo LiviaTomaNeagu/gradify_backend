@@ -81,5 +81,10 @@ namespace MyBackendApi.Services
 
         }
 
+        public async Task<string> GetQuestionAuthorByIdAsync(Guid questionId)
+        {
+            var question = await _questionRepository.GetQuestionByIdAsync(questionId);
+            return question.UserId.ToString();
+        }
     }
 }
