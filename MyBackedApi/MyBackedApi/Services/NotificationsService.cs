@@ -1,4 +1,6 @@
-﻿using MyBackedApi.DTOs.Notifications.Requests;
+﻿using Microsoft.AspNetCore.Mvc;
+using MyBackedApi.DTOs.Notifications.Requests;
+using MyBackedApi.DTOs.Notifications.Responses;
 using MyBackedApi.Models;
 using MyBackedApi.Repositories;
 
@@ -7,7 +9,7 @@ namespace MyBackedApi.Services
     public class NotificationsService
     {
         private readonly NotificationsRepository _repo;
-        
+
         public NotificationsService(NotificationsRepository repository)
         {
             _repo = repository;
@@ -44,10 +46,26 @@ namespace MyBackedApi.Services
                 Read = false,
                 Route = dto.Route
             };
-            //await _repo.AddAsync(notification);
+            await _repo.AddAsync(notification);
             return notification;
         }
 
+        internal async Task ReadNotificationAsync(Guid notificationId)
+        {
+            var notification = await _repo.GetByIdAsync(notificationId);
+            notification.Read = true;
+            await _repo.SaveChangesAsync();
+        }
 
+        public async Task<ActionResult<UnreadCountResponse>> UnreadCountAsync(Guid userId)
+        {
+            var notifications = await _repo.GetAllAsync(userId);
+            return new UnreadCountResponse()
+            {
+                TotalUnread = notifications
+                .Where(n => n.Read == false)
+                .Count()
+            };
+        }
     }
 }
