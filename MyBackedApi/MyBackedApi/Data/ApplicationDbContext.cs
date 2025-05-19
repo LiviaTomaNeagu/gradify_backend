@@ -40,6 +40,11 @@ namespace MyBackedApi.Data
                 .HasForeignKey(q => q.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            modelBuilder.Entity<Question>()
+                .Property(q => q.EmbeddingVector)
+                .HasColumnType("float8[]");
+
+
             modelBuilder.Entity<Answer>().ToTable("answers")
                .HasOne<Question>()
                .WithMany(q => q.Answers)

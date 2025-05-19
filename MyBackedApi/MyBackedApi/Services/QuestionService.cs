@@ -86,5 +86,11 @@ namespace MyBackendApi.Services
             var question = await _questionRepository.GetQuestionByIdAsync(questionId);
             return question.UserId.ToString();
         }
+
+        internal async Task<List<GetQuestionsResponse>> GetSmartSearchAsync(GetSmartSearchRequest payload)
+        {
+            throw new NotImplementedException();
+        }
+
     }
 }

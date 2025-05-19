@@ -2,17 +2,23 @@
 using MyBackedApi.Data;
 using MyBackedApi.DTOs.Forum.Requests;
 using MyBackedApi.Enums;
+using MyBackedApi.Helpers;
 using MyBackedApi.Models;
+using MyBackedApi.Services;
+using System.Globalization;
+using System.Text;
 
 namespace MyBackendApi.Repositories
 {
     public class QuestionRepository
     {
         private readonly ApplicationDbContext _context;
+        private readonly IOpenAiService _openAiService;
 
-        public QuestionRepository(ApplicationDbContext context)
+        public QuestionRepository(ApplicationDbContext context, IOpenAiService openAiService)
         {
             _context = context;
+            _openAiService = openAiService;
         }
 
         public async Task AddQuestionAsync(Question question)
@@ -172,6 +178,29 @@ namespace MyBackendApi.Repositories
                 .ThenByDescending(g => g.LatestAskedAt)
                 .Select(g => g.Topic)
                 .ToListAsync();
+        }
+
+
+        public async Task GenerateEmbeddingForExistingQuestions()
+        {
+            var questions = await _context.Questions
+                .Include(q => q.Answers)
+                .Where(q => q.EmbeddingVector == null)
+                .ToListAsync();
+
+            foreach (var question in questions)
+            {
+                var fullText = TextPreprocessor.Preprocess(question);
+                var embedding = await _openAiService.GetEmbeddingAsync(fullText);
+
+                question.EmbeddingVector = embedding;
+
+                // Optional: salvează și textul agregat dacă nu ai deja
+                question.ImageText ??= "";
+                question.DocumentText ??= "";
+            }
+
+            await _context.SaveChangesAsync();
         }
 
     }

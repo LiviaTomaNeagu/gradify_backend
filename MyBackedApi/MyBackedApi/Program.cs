@@ -2,6 +2,7 @@ using Infrastructure.Config;
 using Infrastructure.Config.Models;
 using Infrastructure.Middlewares;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using MyBackedApi;
 using MyBackedApi.Data;
 using MyBackedApi.Hubs;
@@ -48,6 +49,7 @@ builder.Services.AddScoped<S3Service>();
 builder.Services.AddScoped<GroupService>();
 builder.Services.AddScoped<QuestionSimilarityService>();
 builder.Services.AddScoped<NotificationsService>();
+builder.Services.AddScoped<IOpenAiService, OpenAiService>();
 
 
 // Add repositories to the container.
@@ -71,6 +73,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.Configure<AwsS3Settings>(builder.Configuration.GetSection("AwsS3Settings"));
+builder.Services.Configure<OpenAISettings>(builder.Configuration.GetSection("OpenAI"));
 
 builder.Services.AddJwtAuthentication();
 builder.Services.AddAuthorization();

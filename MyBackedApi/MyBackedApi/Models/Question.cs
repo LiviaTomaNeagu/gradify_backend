@@ -11,6 +11,10 @@ namespace MyBackedApi.Models
         public Guid UserId { get; set; }
         public TopicEnum Topic { get; set; }
 
+        public string? ImageText { get; set; }
+        public string? DocumentText { get; set; }
+        public float[]? EmbeddingVector { get; set; }
+
         public ICollection<Answer> Answers { get; set; }
         public User User { get; set; }
     }

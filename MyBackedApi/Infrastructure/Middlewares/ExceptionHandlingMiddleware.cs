@@ -93,9 +93,9 @@ namespace Infrastructure.Middlewares
             response.Error = exception.GetType().Name;
             response.Timestamp = DateTime.UtcNow;
 
-            context.Response.Headers.Append("X-Error-Message", response.Message);
+            //context.Response.Headers.Append("X-Error-Message", response.Message);
             context.Response.Headers.Append("X-Error-Type", response.Error);
-            context.Response.Headers.Append("X-Error-StackTrace", exception.StackTrace?.Substring(0, Math.Min(exception.StackTrace.Length, 100)) ?? "");
+            //context.Response.Headers.Append("X-Error-StackTrace", exception.StackTrace?.Substring(0, Math.Min(exception.StackTrace.Length, 100)) ?? "");
 
             return context.Response.WriteAsync(JsonConvert.SerializeObject(response, new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() }));
         }
