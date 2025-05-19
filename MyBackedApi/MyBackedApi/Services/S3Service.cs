@@ -129,6 +129,42 @@ namespace MyBackedApi.Services
             }
         }
 
+        public async Task<List<(string FileName, Stream FileStream, string ContentType)>> GetQuestionAttachmentsAsync(Guid questionId)
+        {
+            var folderPrefix = $"attachments/{questionId}/";
+            var listRequest = new ListObjectsV2Request
+            {
+                BucketName = _settings.BucketName,
+                Prefix = folderPrefix
+            };
+
+            var response = await _s3Client.ListObjectsV2Async(listRequest);
+
+            var files = new List<(string FileName, Stream FileStream, string ContentType)>();
+
+            if (response.S3Objects == null || response.S3Objects.Count == 0)
+                return files; // returnează listă goală
+
+            foreach (var s3Object in response.S3Objects)
+            {
+                if (string.IsNullOrEmpty(s3Object.Key) || s3Object.Size == 0)
+                    continue;
+
+                var getResponse = await _s3Client.GetObjectAsync(_settings.BucketName, s3Object.Key);
+
+                using var originalStream = getResponse.ResponseStream;
+                var memStream = new MemoryStream();
+                await originalStream.CopyToAsync(memStream);
+                memStream.Position = 0;
+
+                files.Add((s3Object.Key, memStream, getResponse.Headers.ContentType));
+
+            }
+
+            return files;
+        }
+
+
 
     }
 

@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MyBackedApi.Services;
+using MyBackendApi.Repositories;
+using MyBackendApi.Services;
 
 namespace MyBackedApi.Controllers
 {
@@ -8,10 +10,12 @@ namespace MyBackedApi.Controllers
     public class EmbeddingController : ControllerBase
     {
         private readonly IOpenAiService _openAiService;
+        private readonly QuestionRepository _questionRepository;
 
-        public EmbeddingController(IOpenAiService openAiService)
+        public EmbeddingController(IOpenAiService openAiService, QuestionRepository questionRepository)
         {
             _openAiService = openAiService;
+            _questionRepository = questionRepository;
         }
 
         [HttpPost]
@@ -28,6 +32,22 @@ namespace MyBackedApi.Controllers
                 Preview = embedding.Take(5) // doar primele 5 valori ca exemplu
             });
         }
+
+        [HttpPost("questions/update-text-from-files")]
+        public async Task<IActionResult> PopulateTextFromFiles()
+        {
+            await _questionRepository.PopulateTextFromFilesForQuestionsAsync();
+            return Ok(new { Message = "Done" });
+        }
+
+        [HttpPost("questions/update-embeddings")]
+        public async Task<IActionResult> GenerateEmbeddings()
+        {
+            await _questionRepository.GenerateEmbeddingsForAllQuestionsAsync();
+            return Ok(new { Message = "Embedding generation complete." });
+        }
+
+
     }
 
     public class EmbeddingTestRequest

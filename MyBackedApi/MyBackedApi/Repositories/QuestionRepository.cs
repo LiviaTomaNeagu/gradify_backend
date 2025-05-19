@@ -14,18 +14,35 @@ namespace MyBackendApi.Repositories
     {
         private readonly ApplicationDbContext _context;
         private readonly IOpenAiService _openAiService;
+        private readonly S3Service _s3Service;
 
-        public QuestionRepository(ApplicationDbContext context, IOpenAiService openAiService)
+        public QuestionRepository(ApplicationDbContext context, IOpenAiService openAiService, S3Service s3Service)
         {
             _context = context;
             _openAiService = openAiService;
+            _s3Service = s3Service;
         }
 
         public async Task AddQuestionAsync(Question question)
         {
             _context.Questions.Add(question);
             await _context.SaveChangesAsync();
+
+            var attachments = await _s3Service.GetQuestionAttachmentsAsync(question.Id);
+            if (attachments.Any())
+            {
+                var (imageText, documentText) = await FileTextExtractor.ExtractTextFromFilesAsync(attachments);
+                question.ImageText = imageText;
+                question.DocumentText = documentText;
+            }
+
+            var fullText = TextPreprocessor.Preprocess(question);
+            question.EmbeddingVector = await _openAiService.GetEmbeddingAsync(fullText);
+
+            _context.Questions.Update(question);
+            await _context.SaveChangesAsync();
         }
+
 
         public async Task<(IEnumerable<Question> Questions, int TotalQuestions)> GetAllQuestionsAsync(GetQuestionsRequest payload)
         {
@@ -181,11 +198,14 @@ namespace MyBackendApi.Repositories
         }
 
 
-        public async Task GenerateEmbeddingForExistingQuestions()
+
+
+        //Embedded Controller for populatig existing questions
+        public async Task GenerateEmbeddingsForAllQuestionsAsync()
         {
             var questions = await _context.Questions
                 .Include(q => q.Answers)
-                .Where(q => q.EmbeddingVector == null)
+                .Where(q => q.EmbeddingVector == null || q.EmbeddingVector.Length == 0)
                 .ToListAsync();
 
             foreach (var question in questions)
@@ -194,14 +214,32 @@ namespace MyBackendApi.Repositories
                 var embedding = await _openAiService.GetEmbeddingAsync(fullText);
 
                 question.EmbeddingVector = embedding;
-
-                // Optional: salvează și textul agregat dacă nu ai deja
-                question.ImageText ??= "";
-                question.DocumentText ??= "";
             }
 
             await _context.SaveChangesAsync();
         }
+
+
+        public async Task PopulateTextFromFilesForQuestionsAsync()
+        {
+            var questions = await _context.Questions.ToListAsync();
+
+            foreach (var question in questions)
+            {
+                var files = await _s3Service.GetQuestionAttachmentsAsync(question.Id);
+
+                if (files == null || files.Count == 0)
+                    continue;
+
+                var (imageText, documentText) = await FileTextExtractor.ExtractTextFromFilesAsync(files);
+
+                question.ImageText = imageText;
+                question.DocumentText = documentText;
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
 
     }
 }
