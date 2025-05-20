@@ -13,7 +13,8 @@ namespace MyBackendApi.Services
         private readonly QuestionRepository _questionRepository;
         private readonly QuestionSimilarityService _similarityService;
 
-        public QuestionService(QuestionRepository questionRepository, QuestionSimilarityService questionSimilarityService)
+        public QuestionService(QuestionRepository questionRepository, 
+            QuestionSimilarityService questionSimilarityService)
         {
             _questionRepository = questionRepository;
             _similarityService = questionSimilarityService;
@@ -87,10 +88,12 @@ namespace MyBackendApi.Services
             return question.UserId.ToString();
         }
 
-        internal async Task<List<GetQuestionsResponse>> GetSmartSearchAsync(GetSmartSearchRequest payload)
+        public async Task<List<SmartSearchResultDto>> SmartSearchAsync(string searchText, int page, int pageSize)
         {
-            throw new NotImplementedException();
+            return await _questionRepository.GetQuestionsBySemanticSimilarity(searchText, page, pageSize);
         }
+
+
 
     }
 }

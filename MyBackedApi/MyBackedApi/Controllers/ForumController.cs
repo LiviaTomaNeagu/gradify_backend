@@ -118,10 +118,11 @@ namespace MyBackendApi.Controllers
         }
 
         [HttpPost("smart-search")]
-        public async Task<List<GetQuestionsResponse>> GetSmartSearch([FromBody] GetSmartSearchRequest payload)
+        public async Task<ActionResult<List<SmartSearchResultDto>>> SmartSearch([FromBody] GetSmartSearchRequest payload)
         {
-            var questions = await _questionService.GetSmartSearchAsync(payload);
-            return questions;
+            var result = await _questionService.SmartSearchAsync(payload.Search, payload.Page, payload.PageSize);
+            return Ok(result);
         }
+
     }
 }

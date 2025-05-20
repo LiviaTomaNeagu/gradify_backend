@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MyBackedApi.Data;
 using MyBackedApi.DTOs.Forum.Requests;
+using MyBackedApi.DTOs.Forum.Responses;
 using MyBackedApi.Enums;
 using MyBackedApi.Helpers;
 using MyBackedApi.Models;
@@ -195,6 +196,43 @@ namespace MyBackendApi.Repositories
                 .ThenByDescending(g => g.LatestAskedAt)
                 .Select(g => g.Topic)
                 .ToListAsync();
+        }
+
+
+        public async Task<List<SmartSearchResultDto>> GetQuestionsBySemanticSimilarity(string searchText, int page, int pageSize)
+        {
+            var queryEmbedding = await _openAiService.GetEmbeddingAsync(searchText);
+
+            var questions = await _context.Questions
+                .Where(q => q.EmbeddingVector != null && q.EmbeddingVector.Length > 0)
+                .Include(q => q.Answers)
+                .Include(q => q.User)
+                .ToListAsync();
+
+            var scored = questions
+                .Select(q => new
+                {
+                    Question = q,
+                    Score = SimilarityFunctions.CosineSimilarity(queryEmbedding, q.EmbeddingVector)
+                })
+                .OrderByDescending(q => q.Score)
+                .ToList();
+
+            var total = scored.Count;
+
+            var results = scored
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(x => new SmartSearchResultDto
+                {
+                    Id = x.Question.Id,
+                    Title = x.Question.Title,
+                    Content = x.Question.Content,
+                    Score = x.Score
+                }).ToList();
+
+
+            return results;
         }
 
 
