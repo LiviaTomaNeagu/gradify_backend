@@ -6,8 +6,6 @@ using MyBackedApi.Enums;
 using MyBackedApi.Helpers;
 using MyBackedApi.Models;
 using MyBackedApi.Services;
-using System.Globalization;
-using System.Text;
 
 namespace MyBackendApi.Repositories
 {
@@ -37,12 +35,25 @@ namespace MyBackendApi.Repositories
                 question.DocumentText = documentText;
             }
 
+            if (!string.IsNullOrWhiteSpace(question.Title))
+                question.TitleEmbedding = await _openAiService.GetEmbeddingAsync(question.Title);
+
+            if (!string.IsNullOrWhiteSpace(question.Content))
+                question.ContentEmbedding = await _openAiService.GetEmbeddingAsync(question.Content);
+
+            if (!string.IsNullOrWhiteSpace(question.ImageText))
+                question.ImageEmbedding = await _openAiService.GetEmbeddingAsync(question.ImageText);
+
+            if (!string.IsNullOrWhiteSpace(question.DocumentText))
+                question.DocumentEmbedding = await _openAiService.GetEmbeddingAsync(question.DocumentText);
+
             var fullText = TextPreprocessor.Preprocess(question);
             question.EmbeddingVector = await _openAiService.GetEmbeddingAsync(fullText);
 
             _context.Questions.Update(question);
             await _context.SaveChangesAsync();
         }
+
 
 
         public async Task<(IEnumerable<Question> Questions, int TotalQuestions)> GetAllQuestionsAsync(GetQuestionsRequest payload)
@@ -204,38 +215,69 @@ namespace MyBackendApi.Repositories
             var queryEmbedding = await _openAiService.GetEmbeddingAsync(searchText);
 
             var questions = await _context.Questions
-                .Where(q => q.EmbeddingVector != null && q.EmbeddingVector.Length > 0)
+            .Where(q =>
+                (q.TitleEmbedding != null && q.TitleEmbedding.Length > 0) ||
+                (q.ContentEmbedding != null && q.ContentEmbedding.Length > 0) ||
+                (q.ImageEmbedding != null && q.ImageEmbedding.Length > 0) ||
+                (q.DocumentEmbedding != null && q.DocumentEmbedding.Length > 0))
                 .Include(q => q.Answers)
                 .Include(q => q.User)
                 .ToListAsync();
 
-            var scored = questions
-                .Select(q => new
+            var results = new List<SmartSearchResultDto>();
+
+            foreach (var question in questions)
+            {
+                var scores = new List<(string Source, float[] Embedding, string Text)>
                 {
-                    Question = q,
-                    Score = SimilarityFunctions.CosineSimilarity(queryEmbedding, q.EmbeddingVector)
-                })
-                .OrderByDescending(q => q.Score)
-                .ToList();
+                    ("title", question.TitleEmbedding, question.Title ?? ""),
+                    ("content", question.ContentEmbedding, question.Content ?? ""),
+                    ("image", question.ImageEmbedding, question.ImageText ?? ""),
+                    ("document", question.DocumentEmbedding, question.DocumentText ?? "")
+                };
 
-            var total = scored.Count;
+                string bestSource = "";
+                string bestSnippet = "";
+                double bestScore = 0;
 
-            var results = scored
+                foreach (var (source, embedding, text) in scores)
+                {
+                    if (embedding == null || embedding.Length == 0 || string.IsNullOrWhiteSpace(text))
+                        continue;
+
+                    var score = SimilarityFunctions.CombinedSimilarity(
+                        queryEmbedding,
+                        embedding,
+                        searchText,
+                        text
+                    );
+
+
+                    if (score > bestScore)
+                    {
+                        bestScore = score;
+                        bestSource = source;
+                        bestSnippet = text.Length > 200 ? text.Substring(0, 200) + "..." : text;
+                    }
+                }
+
+                results.Add(new SmartSearchResultDto
+                {
+                    Id = question.Id,
+                    Title = question.Title,
+                    Content = question.Content,
+                    Score = bestScore,
+                    MatchedSource = bestSource,
+                    MatchedSnippet = bestSnippet
+                });
+            }
+
+            return results
+                .OrderByDescending(r => r.Score)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .Select(x => new SmartSearchResultDto
-                {
-                    Id = x.Question.Id,
-                    Title = x.Question.Title,
-                    Content = x.Question.Content,
-                    Score = x.Score
-                }).ToList();
-
-
-            return results;
+                .ToList();
         }
-
-
 
 
         //Embedded Controller for populatig existing questions
@@ -243,19 +285,42 @@ namespace MyBackendApi.Repositories
         {
             var questions = await _context.Questions
                 .Include(q => q.Answers)
-                .Where(q => q.EmbeddingVector == null || q.EmbeddingVector.Length == 0)
                 .ToListAsync();
 
             foreach (var question in questions)
             {
-                var fullText = TextPreprocessor.Preprocess(question);
-                var embedding = await _openAiService.GetEmbeddingAsync(fullText);
+                // 1. Title
+                if (!string.IsNullOrWhiteSpace(question.Title))
+                {
+                    question.TitleEmbedding = await _openAiService.GetEmbeddingAsync(question.Title);
+                }
 
-                question.EmbeddingVector = embedding;
+                // 2. Content
+                if (!string.IsNullOrWhiteSpace(question.Content))
+                {
+                    question.ContentEmbedding = await _openAiService.GetEmbeddingAsync(question.Content);
+                }
+
+                // 3. ImageText
+                if (!string.IsNullOrWhiteSpace(question.ImageText))
+                {
+                    question.ImageEmbedding = await _openAiService.GetEmbeddingAsync(question.ImageText);
+                }
+
+                // 4. DocumentText
+                if (!string.IsNullOrWhiteSpace(question.DocumentText))
+                {
+                    question.DocumentEmbedding = await _openAiService.GetEmbeddingAsync(question.DocumentText);
+                }
+
+                // 5. Global vector (combinat, fallback)
+                var fullText = TextPreprocessor.Preprocess(question);
+                question.EmbeddingVector = await _openAiService.GetEmbeddingAsync(fullText);
             }
 
             await _context.SaveChangesAsync();
         }
+
 
 
         public async Task PopulateTextFromFilesForQuestionsAsync()
