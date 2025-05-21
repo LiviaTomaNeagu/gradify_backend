@@ -1,4 +1,6 @@
-﻿namespace MyBackedApi.DTOs.Forum.Responses
+﻿using MyBackedApi.Enums;
+
+namespace MyBackedApi.DTOs.Forum.Responses
 {
     public class SmartSearchResultDto
     {
@@ -8,6 +10,7 @@
         public double Score { get; set; }
         public string MatchedSource { get; set; } // ex: title, content, image, document
         public string MatchedSnippet { get; set; } // textul concret unde a fost găsit
+        public TopicEnum Topic { get; set; }
     }
 
 }

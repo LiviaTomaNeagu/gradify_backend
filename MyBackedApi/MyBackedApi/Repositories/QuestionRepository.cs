@@ -210,7 +210,7 @@ namespace MyBackendApi.Repositories
         }
 
 
-        public async Task<List<SmartSearchResultDto>> GetQuestionsBySemanticSimilarity(string searchText, int page, int pageSize)
+        public async Task<List<SmartSearchResultDto>> GetQuestionsBySemanticSimilarity(string searchText)
         {
             var queryEmbedding = await _openAiService.GetEmbeddingAsync(searchText);
 
@@ -268,14 +268,14 @@ namespace MyBackendApi.Repositories
                     Content = question.Content,
                     Score = bestScore,
                     MatchedSource = bestSource,
-                    MatchedSnippet = bestSnippet
+                    MatchedSnippet = bestSnippet,
+                    Topic = question.Topic
                 });
             }
 
             return results
                 .OrderByDescending(r => r.Score)
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
+                .Take(9)
                 .ToList();
         }
 

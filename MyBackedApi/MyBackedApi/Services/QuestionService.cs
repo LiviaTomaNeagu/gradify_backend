@@ -88,9 +88,9 @@ namespace MyBackendApi.Services
             return question.UserId.ToString();
         }
 
-        public async Task<List<SmartSearchResultDto>> SmartSearchAsync(string searchText, int page, int pageSize)
+        public async Task<List<SmartSearchResultDto>> SmartSearchAsync(string searchText)
         {
-            return await _questionRepository.GetQuestionsBySemanticSimilarity(searchText, page, pageSize);
+            return await _questionRepository.GetQuestionsBySemanticSimilarity(searchText);
         }
 
 
