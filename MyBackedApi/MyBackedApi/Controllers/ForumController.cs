@@ -44,6 +44,7 @@ namespace MyBackendApi.Controllers
             if (attachments != null && attachments.Any())
             {
                 var urls = await _s3Service.AddMultipleFilesAsync(attachments, "attachments/" + question.Id.ToString());
+                await _questionService.AddQuestionDocumentsAsync(question);
             }
 
             return Ok(new BaseResponseEmpty { Message = "Question added!" });

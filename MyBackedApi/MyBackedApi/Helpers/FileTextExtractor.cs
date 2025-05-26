@@ -2,47 +2,55 @@
 using DocumentFormat.OpenXml.Packaging;
 using Tesseract;
 using UglyToad.PdfPig;
+using UglyToad.PdfPig.Content;
 
 public static class FileTextExtractor
 {
-    public static async Task<(string imageText, string documentText)> ExtractTextFromFilesAsync(List<(string FileName, Stream FileStream, string ContentType)> files)
+    public class ExtractedFileText
     {
-        var imageText = new StringBuilder();
-        var documentText = new StringBuilder();
+        public string FileName { get; set; } = null!;
+        public string ContentType { get; set; } = null!;
+        public List<PageText> Pages { get; set; } = new(); // Pentru PDF
+        public string? FullText { get; set; } // Pentru imagini și .txt
+    }
+
+    public class PageText
+    {
+        public int PageNumber { get; set; }
+        public string Text { get; set; } = null!;
+    }
+
+    public static async Task<List<ExtractedFileText>> ExtractTextFromFilesAsync(List<(string FileName, Stream FileStream, string ContentType)> files)
+    {
+        var results = new List<ExtractedFileText>();
 
         foreach (var file in files)
         {
             var extension = Path.GetExtension(file.FileName).ToLower();
+            var extracted = new ExtractedFileText
+            {
+                FileName = file.FileName,
+                ContentType = file.ContentType
+            };
 
             if (extension == ".png" || extension == ".jpg" || extension == ".jpeg")
             {
                 var text = await ExtractTextFromImageAsync(file.FileStream);
-                imageText.AppendLine(text);
+                extracted.FullText = text;
             }
             else if (extension == ".pdf")
             {
-                var text = ExtractTextFromPdf(file.FileStream);
-                documentText.AppendLine(text);
+                extracted.Pages = ExtractTextFromPdfWithPages(file.FileStream);
             }
-            else if (extension == ".docx")
-            {
-                var text = ExtractTextFromDocx(file.FileStream);
-                documentText.AppendLine(text);
-            }
-            else if (extension == ".txt")
-            {
-                using var reader = new StreamReader(file.FileStream);
-                var text = await reader.ReadToEndAsync();
-                documentText.AppendLine(text);
-            }
+
+            results.Add(extracted);
         }
 
-        return (imageText.ToString(), documentText.ToString());
+        return results;
     }
 
     private static async Task<string> ExtractTextFromImageAsync(Stream imageStream)
     {
-        // Salvează temporar fișierul (Tesseract cere path local)
         var tempFile = Path.GetTempFileName();
         await using (var fileStream = File.Create(tempFile))
         {
@@ -55,28 +63,37 @@ public static class FileTextExtractor
         return page.GetText();
     }
 
-    private static string ExtractTextFromPdf(Stream stream)
+    private static List<PageText> ExtractTextFromPdfWithPages(Stream stream)
     {
+        var result = new List<PageText>();
         using var pdf = PdfDocument.Open(stream);
-        var text = new StringBuilder();
 
         foreach (var page in pdf.GetPages())
         {
-            text.AppendLine(page.Text);
+            result.Add(new PageText
+            {
+                PageNumber = (int)page.Number,
+                Text = page.Text
+            });
         }
 
-        return text.ToString();
+        return result;
     }
 
-    private static string ExtractTextFromDocx(Stream stream)
+    public static string ExtractSnippet(string text, string searchTerm, int contextLength = 50)
     {
-        using var memStream = new MemoryStream();
-        stream.CopyTo(memStream);
-        memStream.Position = 0;
+        if (string.IsNullOrWhiteSpace(text) || string.IsNullOrWhiteSpace(searchTerm))
+            return text;
 
-        using var wordDoc = WordprocessingDocument.Open(memStream, false);
-        var body = wordDoc.MainDocumentPart.Document.Body;
-        return body?.InnerText ?? "";
+        var index = text.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase);
+        if (index == -1)
+            return text.Length > 200 ? text.Substring(0, 200) + "..." : text; // fallback: primii 200 de char
+
+        var start = Math.Max(0, index - contextLength);
+        var length = Math.Min(searchTerm.Length + 2 * contextLength, text.Length - start);
+        var snippet = text.Substring(start, length).Trim();
+
+        return "..." + snippet + "...";
     }
 
 }

@@ -6,6 +6,7 @@ using MyBackedApi.Enums;
 using MyBackedApi.Helpers;
 using MyBackedApi.Models;
 using MyBackedApi.Services;
+using System.Text;
 
 namespace MyBackendApi.Repositories
 {
@@ -26,14 +27,42 @@ namespace MyBackendApi.Repositories
         {
             _context.Questions.Add(question);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task AddQuestionDocumentsAsync(Question question)
+        {
 
             var attachments = await _s3Service.GetQuestionAttachmentsAsync(question.Id);
             if (attachments.Any())
             {
-                var (imageText, documentText) = await FileTextExtractor.ExtractTextFromFilesAsync(attachments);
-                question.ImageText = imageText;
-                question.DocumentText = documentText;
+                var extractedFiles = await FileTextExtractor.ExtractTextFromFilesAsync(attachments);
+
+                // Vechea funcționalitate: reconstruiești ImageText și DocumentText pentru compatibilitate
+                var imageText = new StringBuilder();
+                var documentText = new StringBuilder();
+
+                foreach (var f in extractedFiles)
+                {
+                    var ext = Path.GetExtension(f.FileName).ToLower();
+                    if ((ext == ".png" || ext == ".jpg" || ext == ".jpeg") && !string.IsNullOrWhiteSpace(f.FullText))
+                        imageText.AppendLine(f.FullText);
+                    else if (ext == ".pdf")
+                    {
+                        foreach (var p in f.Pages)
+                        {
+                            documentText.AppendLine(p.Text);
+                        }
+                        if (!string.IsNullOrWhiteSpace(f.FullText))
+                            documentText.AppendLine(f.FullText);
+                    }
+                }
+
+                question.ImageText = imageText.ToString();
+                question.DocumentText = documentText.ToString();
+
+                await _s3Service.SaveMetadataJsonAsync(question.Id, extractedFiles);
             }
+
 
             if (!string.IsNullOrWhiteSpace(question.Title))
                 question.TitleEmbedding = await _openAiService.GetEmbeddingAsync(question.Title);
@@ -44,16 +73,12 @@ namespace MyBackendApi.Repositories
             if (!string.IsNullOrWhiteSpace(question.ImageText))
                 question.ImageEmbedding = await _openAiService.GetEmbeddingAsync(question.ImageText);
 
-            if (!string.IsNullOrWhiteSpace(question.DocumentText))
-                question.DocumentEmbedding = await _openAiService.GetEmbeddingAsync(question.DocumentText);
-
-            var fullText = TextPreprocessor.Preprocess(question);
-            question.EmbeddingVector = await _openAiService.GetEmbeddingAsync(fullText);
+            //var fullText = TextPreprocessor.Preprocess(question);
+            //question.EmbeddingVector = await _openAiService.GetEmbeddingAsync(fullText);
 
             _context.Questions.Update(question);
             await _context.SaveChangesAsync();
         }
-
 
 
         public async Task<(IEnumerable<Question> Questions, int TotalQuestions)> GetAllQuestionsAsync(GetQuestionsRequest payload)
@@ -209,37 +234,45 @@ namespace MyBackendApi.Repositories
                 .ToListAsync();
         }
 
-
         public async Task<List<SmartSearchResultDto>> GetQuestionsBySemanticSimilarity(string searchText)
         {
             var queryEmbedding = await _openAiService.GetEmbeddingAsync(searchText);
 
             var questions = await _context.Questions
-            .Where(q =>
-                (q.TitleEmbedding != null && q.TitleEmbedding.Length > 0) ||
-                (q.ContentEmbedding != null && q.ContentEmbedding.Length > 0) ||
-                (q.ImageEmbedding != null && q.ImageEmbedding.Length > 0) ||
-                (q.DocumentEmbedding != null && q.DocumentEmbedding.Length > 0))
+                .Where(q =>
+                    (q.TitleEmbedding != null && q.TitleEmbedding.Length > 0) ||
+                    (q.ContentEmbedding != null && q.ContentEmbedding.Length > 0) ||
+                    (q.ImageEmbedding != null && q.ImageEmbedding.Length > 0) ||
+                    (q.DocumentEmbedding != null && q.DocumentEmbedding.Length > 0))
                 .Include(q => q.Answers)
                 .Include(q => q.User)
                 .ToListAsync();
 
             var results = new List<SmartSearchResultDto>();
 
+            // Ponderi pentru fiecare sursă
+            var weights = new Dictionary<string, double>
+    {
+        { "title", 1.0 },
+        { "content", 1.0 },
+        { "image", 1.0 },
+        { "document", 1.3 } // Boost implicit pentru documente
+    };
+
             foreach (var question in questions)
             {
                 var scores = new List<(string Source, float[] Embedding, string Text)>
-                {
-                    ("title", question.TitleEmbedding, question.Title ?? ""),
-                    ("content", question.ContentEmbedding, question.Content ?? ""),
-                    ("image", question.ImageEmbedding, question.ImageText ?? ""),
-                    ("document", question.DocumentEmbedding, question.DocumentText ?? "")
-                };
+        {
+            ("title", question.TitleEmbedding, question.Title ?? ""),
+            ("content", question.ContentEmbedding, question.Content ?? ""),
+            ("image", question.ImageEmbedding, question.ImageText ?? "")
+        };
 
                 string bestSource = "";
                 string bestSnippet = "";
                 double bestScore = 0;
 
+                // 1️⃣ Calculează scorurile embeddings
                 foreach (var (source, embedding, text) in scores)
                 {
                     if (embedding == null || embedding.Length == 0 || string.IsNullOrWhiteSpace(text))
@@ -252,12 +285,43 @@ namespace MyBackendApi.Repositories
                         text
                     );
 
+                    // Aplică pondere
+                    score *= weights.GetValueOrDefault(source, 1.0);
 
                     if (score > bestScore)
                     {
                         bestScore = score;
                         bestSource = source;
                         bestSnippet = text.Length > 200 ? text.Substring(0, 200) + "..." : text;
+                    }
+                }
+
+                // 2️⃣ Căutare concretă în metadata.json pentru document
+                string? fileName = null;
+                int? page = null;
+
+                var metadata = await _s3Service.GetMetadataForQuestionAsync(question.Id);
+                if (metadata != null)
+                {
+                    foreach (var file in metadata)
+                    {
+                        var pages = file.Value;
+                        foreach (var p in pages)
+                        {
+                            if (DocumentMatch.FuzzyMatch(p.Value, searchText))
+                            {
+                                fileName = file.Key;
+                                page = int.Parse(p.Key);
+                                bestSnippet = FileTextExtractor.ExtractSnippet(p.Value, searchText);
+
+                                bestScore += 0.2;
+
+                                bestSource = "document"; // optional, dacă vrei să-l forțezi
+
+                                break;
+                            }
+
+                        }
                     }
                 }
 
@@ -269,7 +333,9 @@ namespace MyBackendApi.Repositories
                     Score = bestScore,
                     MatchedSource = bestSource,
                     MatchedSnippet = bestSnippet,
-                    Topic = question.Topic
+                    Topic = question.Topic,
+                    FileName = fileName,
+                    Page = page
                 });
             }
 
@@ -278,7 +344,6 @@ namespace MyBackendApi.Repositories
                 .Take(9)
                 .ToList();
         }
-
 
         //Embedded Controller for populatig existing questions
         public async Task GenerateEmbeddingsForAllQuestionsAsync()
@@ -334,14 +399,36 @@ namespace MyBackendApi.Repositories
                 if (files == null || files.Count == 0)
                     continue;
 
-                var (imageText, documentText) = await FileTextExtractor.ExtractTextFromFilesAsync(files);
+                var extractedFiles = await FileTextExtractor.ExtractTextFromFilesAsync(files);
 
-                question.ImageText = imageText;
-                question.DocumentText = documentText;
+                var imageText = new StringBuilder();
+                var documentText = new StringBuilder();
+
+                foreach (var f in extractedFiles)
+                {
+                    var ext = Path.GetExtension(f.FileName).ToLower();
+                    if ((ext == ".png" || ext == ".jpg" || ext == ".jpeg") && !string.IsNullOrWhiteSpace(f.FullText))
+                        imageText.AppendLine(f.FullText);
+                    else if (ext == ".pdf")
+                    {
+                        foreach (var p in f.Pages)
+                        {
+                            documentText.AppendLine(p.Text);
+                        }
+                        if (!string.IsNullOrWhiteSpace(f.FullText))
+                            documentText.AppendLine(f.FullText);
+                    }
+                }
+
+                question.ImageText = imageText.ToString();
+                question.DocumentText = documentText.ToString();
+
+                await _s3Service.SaveMetadataJsonAsync(question.Id, extractedFiles);
             }
 
             await _context.SaveChangesAsync();
         }
+
 
 
     }

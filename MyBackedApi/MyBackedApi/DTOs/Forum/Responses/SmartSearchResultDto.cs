@@ -11,6 +11,9 @@ namespace MyBackedApi.DTOs.Forum.Responses
         public string MatchedSource { get; set; } // ex: title, content, image, document
         public string MatchedSnippet { get; set; } // textul concret unde a fost găsit
         public TopicEnum Topic { get; set; }
+
+        public string? FileName { get; set; } // numele fișierului
+        public int? Page { get; set; } // pagina (dacă e PDF)
     }
 
 }

@@ -93,7 +93,9 @@ namespace MyBackendApi.Services
             return await _questionRepository.GetQuestionsBySemanticSimilarity(searchText);
         }
 
-
-
+        internal async Task AddQuestionDocumentsAsync(Question question)
+        {
+            await _questionRepository.AddQuestionDocumentsAsync(question);
+        }
     }
 }

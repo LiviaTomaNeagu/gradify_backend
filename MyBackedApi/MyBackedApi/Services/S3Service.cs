@@ -6,6 +6,7 @@ using Infrastructure.Exceptions;
 using Microsoft.Extensions.Options;
 using MyBackedApi.DTOs.Forum;
 using MyBackedApi.DTOs.Forum.Responses;
+using Newtonsoft.Json;
 
 namespace MyBackedApi.Services
 {
@@ -164,8 +165,54 @@ namespace MyBackedApi.Services
             return files;
         }
 
+        public async Task SaveMetadataJsonAsync(Guid questionId, List<FileTextExtractor.ExtractedFileText> extractedFiles)
+        {
+            var metadata = new Dictionary<string, object>();
+
+            foreach (var file in extractedFiles)
+            {
+                if (file.Pages.Any())
+                {
+                    var fileName = Path.GetFileName(file.FileName); // Extrage doar numele
+                    metadata[fileName] = file.Pages.ToDictionary(p => p.PageNumber.ToString(), p => p.Text);
+
+
+                }
+            }
+
+            var json = JsonConvert.SerializeObject(metadata, Formatting.Indented);
+            var metadataKey = $"attachments/{questionId}/metadata.json";
+
+            var putRequest = new PutObjectRequest
+            {
+                BucketName = _settings.BucketName,
+                Key = metadataKey,
+                ContentBody = json
+            };
+
+            await _s3Client.PutObjectAsync(putRequest);
+        }
+
+        public async Task<Dictionary<string, Dictionary<string, string>>?> GetMetadataForQuestionAsync(Guid questionId)
+        {
+            try
+            {
+                var response = await _s3Client.GetObjectAsync(new GetObjectRequest
+                {
+                    BucketName = _settings.BucketName,
+                    Key = $"attachments/{questionId}/metadata.json"
+                });
+
+                using var reader = new StreamReader(response.ResponseStream);
+                var json = await reader.ReadToEndAsync();
+                return JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, string>>>(json);
+            }
+            catch (AmazonS3Exception ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                return null; // fallback pentru documentele vechi
+            }
+        }
 
 
     }
-
 }
