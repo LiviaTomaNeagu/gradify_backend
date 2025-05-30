@@ -401,3 +401,4 @@ FodyWeavers.xsd
 
 appsettings.json
 MyBackedApi/MyBackedApi/appsettings.json
+MyBackedApi/MyBackedApi/appsettings.Development.json

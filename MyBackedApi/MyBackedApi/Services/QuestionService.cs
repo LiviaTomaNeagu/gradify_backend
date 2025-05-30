@@ -13,7 +13,8 @@ namespace MyBackendApi.Services
         private readonly QuestionRepository _questionRepository;
         private readonly QuestionSimilarityService _similarityService;
 
-        public QuestionService(QuestionRepository questionRepository, QuestionSimilarityService questionSimilarityService)
+        public QuestionService(QuestionRepository questionRepository, 
+            QuestionSimilarityService questionSimilarityService)
         {
             _questionRepository = questionRepository;
             _similarityService = questionSimilarityService;
@@ -85,6 +86,16 @@ namespace MyBackendApi.Services
         {
             var question = await _questionRepository.GetQuestionByIdAsync(questionId);
             return question.UserId.ToString();
+        }
+
+        public async Task<List<SmartSearchResultDto>> SmartSearchAsync(string searchText)
+        {
+            return await _questionRepository.GetQuestionsBySemanticSimilarity(searchText);
+        }
+
+        internal async Task AddQuestionDocumentsAsync(Question question)
+        {
+            await _questionRepository.AddQuestionDocumentsAsync(question);
         }
     }
 }

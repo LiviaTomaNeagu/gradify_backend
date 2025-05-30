@@ -304,7 +304,7 @@ namespace MyBackendApi.Services
                 CreatedAt = user.CreatedAt,
                 IsApproved = user.IsApproved,
                 AvatarUrl = user.AvatarUrl,
-                StudentDetails = user.StudentDetails.ToGetStudentDetailsResponse()
+                StudentDetails = payload.Role == RoleTypeEnum.STUDENT ? user.StudentDetails.ToGetStudentDetailsResponse() : null
             }).ToList();
 
 

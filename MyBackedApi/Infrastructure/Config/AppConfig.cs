@@ -12,6 +12,7 @@ namespace Infrastructure.Config
 
         public static SendGridSettings SendGridSettings { get; set; }
         public static ServerSettings ServerSettings { get; set; }
+        public static OpenAISettings OpenAISettings { get; set; }
     
         public static void Init(IConfiguration Configuration)
         {
@@ -35,6 +36,9 @@ namespace Infrastructure.Config
 
             var serverSection = Configuration.GetSection("Server");
             ServerSettings = serverSection.Get<ServerSettings>();
+
+            var openAiSection = Configuration.GetSection("OpenAI");
+            OpenAISettings = openAiSection.Get<OpenAISettings>();
         }
     }
 }

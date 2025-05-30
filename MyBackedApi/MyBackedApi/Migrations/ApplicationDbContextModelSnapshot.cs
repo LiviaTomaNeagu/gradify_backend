@@ -268,12 +268,33 @@ namespace MyBackedApi.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.PrimitiveCollection<float[]>("ContentEmbedding")
+                        .HasColumnType("real[]");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.PrimitiveCollection<float[]>("DocumentEmbedding")
+                        .HasColumnType("real[]");
+
+                    b.Property<string>("DocumentText")
+                        .HasColumnType("text");
+
+                    b.PrimitiveCollection<double[]>("EmbeddingVector")
+                        .HasColumnType("float8[]");
+
+                    b.PrimitiveCollection<float[]>("ImageEmbedding")
+                        .HasColumnType("real[]");
+
+                    b.Property<string>("ImageText")
+                        .HasColumnType("text");
 
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.PrimitiveCollection<float[]>("TitleEmbedding")
+                        .HasColumnType("real[]");
 
                     b.Property<int>("Topic")
                         .HasColumnType("integer");
