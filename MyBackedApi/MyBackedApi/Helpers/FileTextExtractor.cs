@@ -49,7 +49,7 @@ public static class FileTextExtractor
         return results;
     }
 
-    private static async Task<string> ExtractTextFromImageAsync(Stream imageStream)
+    private static async Task<string> ExtractTextFromImageAsync(Stream imageStream, string lang = "eng+ron")
     {
         var tempFile = Path.GetTempFileName();
         await using (var fileStream = File.Create(tempFile))
@@ -57,11 +57,33 @@ public static class FileTextExtractor
             await imageStream.CopyToAsync(fileStream);
         }
 
-        var ocrEngine = new TesseractEngine(@"./tessdata", "eng", EngineMode.Default);
-        using var img = Pix.LoadFromFile(tempFile);
-        using var page = ocrEngine.Process(img);
-        return page.GetText();
+        try
+        {
+            using var ocrEngine = new TesseractEngine(@"./tessdata", "ron+eng", EngineMode.Default);
+
+            using var img = Pix.LoadFromFile(tempFile);
+            using var page = ocrEngine.Process(img);
+
+            var extractedText = page.GetText();
+            return CleanExtractedText(extractedText);
+        }
+        finally
+        {
+            File.Delete(tempFile);
+        }
     }
+
+    private static string CleanExtractedText(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text)) return string.Empty;
+
+        return text
+            .Replace("\n", " ")
+            .Replace("\r", " ")
+            .Replace("\t", " ")
+            .Trim();
+    }
+
 
     private static List<PageText> ExtractTextFromPdfWithPages(Stream stream)
     {
