@@ -145,7 +145,7 @@ namespace MyBackendApi.Repositories
                 .Where(u => u.Role == payload.Role)
             .AsQueryable();
 
-            if (payload.Role == RoleTypeEnum.STUDENT) // presupun că ai un enum Role cu Student
+            if (payload.Role == RoleTypeEnum.STUDENT || payload.Role == RoleTypeEnum.ADMIN)
             {
                 query = query
                     .Include(u => u.StudentDetails)
