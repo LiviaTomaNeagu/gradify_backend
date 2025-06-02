@@ -32,7 +32,9 @@ namespace MyBackendApi.Mappings
                 return new();
             }
 
-            return answers.Select(a => a.ToGetAnswerResponse()).ToList();
+            var response = answers.Select(a => a.ToGetAnswerResponse()).ToList();
+
+            return response;
         }
     }
 }

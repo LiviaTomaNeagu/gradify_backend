@@ -99,36 +99,87 @@ namespace MyBackedApi.Services
 
             var response = await _s3Client.ListObjectsV2Async(listRequest);
 
-            if (response.S3Objects == null || response.S3Objects.Count == 0)
-            {
-                question.Attachments = new List<AttachmentsDto>();
-                return;
-            }
-
+            // Inițializează listele
             question.Attachments = new List<AttachmentsDto>();
+
+            // Pregătește dictionary pentru fișierele răspunsurilor
+            var answerFiles = new Dictionary<Guid, List<AttachmentsDto>>();
 
             foreach (var s3Object in response.S3Objects)
             {
-                var fileName = s3Object.Key.Substring(prefix.Length);
+                var relativePath = s3Object.Key.Substring(prefix.Length); // ce e după {questionId}/
 
-                var presignedUrl = _s3Client.GetPreSignedURL(new GetPreSignedUrlRequest
+                // Ignoră metadata.json
+                if (relativePath == "metadata.json")
+                    continue;
+
+                // Este fișier de răspuns? Ex: {answerId}/file.pdf
+                if (relativePath.Contains("/"))
                 {
-                    BucketName = bucketName,
-                    Key = s3Object.Key,
-                    Expires = DateTime.UtcNow.AddMinutes(10), // link valabil 10 min
-                    ResponseHeaderOverrides = new ResponseHeaderOverrides
+                    var parts = relativePath.Split('/', 2); // [0]: answerId, [1]: file.pdf
+                    if (Guid.TryParse(parts[0], out var answerId))
                     {
-                        ContentDisposition = $"attachment; filename=\"{fileName}\""
-                    }
-                });
+                        var fileName = parts[1];
 
-                question.Attachments.Add(new AttachmentsDto
+                        var presignedUrl = _s3Client.GetPreSignedURL(new GetPreSignedUrlRequest
+                        {
+                            BucketName = bucketName,
+                            Key = s3Object.Key,
+                            Expires = DateTime.UtcNow.AddMinutes(10),
+                            ResponseHeaderOverrides = new ResponseHeaderOverrides
+                            {
+                                ContentDisposition = $"attachment; filename=\"{fileName}\""
+                            }
+                        });
+
+                        if (!answerFiles.ContainsKey(answerId))
+                            answerFiles[answerId] = new List<AttachmentsDto>();
+
+                        answerFiles[answerId].Add(new AttachmentsDto
+                        {
+                            Name = fileName,
+                            Url = presignedUrl
+                        });
+                    }
+                }
+                else
                 {
-                    Name = fileName,
-                    Url = presignedUrl
-                });
+                    // Este fișier de întrebare
+                    var fileName = relativePath;
+
+                    var presignedUrl = _s3Client.GetPreSignedURL(new GetPreSignedUrlRequest
+                    {
+                        BucketName = bucketName,
+                        Key = s3Object.Key,
+                        Expires = DateTime.UtcNow.AddMinutes(10),
+                        ResponseHeaderOverrides = new ResponseHeaderOverrides
+                        {
+                            ContentDisposition = $"attachment; filename=\"{fileName}\""
+                        }
+                    });
+
+                    question.Attachments.Add(new AttachmentsDto
+                    {
+                        Name = fileName,
+                        Url = presignedUrl
+                    });
+                }
+            }
+
+            // Leagă fișierele de răspunsurile lor
+            foreach (var answer in question.Answers)
+            {
+                if (answerFiles.TryGetValue(answer.Id, out var files))
+                {
+                    answer.Attachments = files;
+                }
+                else
+                {
+                    answer.Attachments = new List<AttachmentsDto>();
+                }
             }
         }
+
 
         public async Task<List<(string FileName, Stream FileStream, string ContentType)>> GetQuestionAttachmentsAsync(Guid questionId)
         {
@@ -213,6 +264,80 @@ namespace MyBackedApi.Services
             }
         }
 
+        public async Task UploadAnswerFilesAndUpdateMetadataAsync(Guid questionId, Guid answerId, List<IFormFile> files)
+        {
+            var bucketName = _settings.BucketName;
+            var metadataKey = $"attachments/{questionId}/metadata.json";
+
+            Dictionary<string, object> metadata = new();
+
+            try
+            {
+                var response = await _s3Client.GetObjectAsync(bucketName, metadataKey);
+                using var reader = new StreamReader(response.ResponseStream);
+                var existingJson = await reader.ReadToEndAsync();
+                metadata = JsonConvert.DeserializeObject<Dictionary<string, object>>(existingJson) ?? new();
+            }
+            catch (AmazonS3Exception ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                // metadata.json nu există încă? Creăm unul gol.
+            }
+
+            var filesForExtraction = new List<(string FileName, Stream FileStream, string ContentType)>();
+
+            foreach (var file in files)
+            {
+                var key = $"attachments/{questionId}/{answerId}/{file.FileName}";
+
+                var originalStream = new MemoryStream();
+                await file.OpenReadStream().CopyToAsync(originalStream);
+                originalStream.Position = 0;
+
+                var uploadStream = new MemoryStream(originalStream.ToArray());
+                uploadStream.Position = 0;
+
+                var uploadRequest = new PutObjectRequest
+                {
+                    BucketName = bucketName,
+                    Key = key,
+                    InputStream = uploadStream,
+                    ContentType = file.ContentType
+                };
+
+                await _s3Client.PutObjectAsync(uploadRequest);
+                uploadStream.Dispose(); // curățăm stream-ul de upload
+
+                var extractionStream = new MemoryStream(originalStream.ToArray());
+                extractionStream.Position = 0;
+
+                filesForExtraction.Add((file.FileName, extractionStream, file.ContentType));
+
+                originalStream.Dispose(); // curățăm stream-ul original
+            }
+
+
+
+            var extractedFiles = await FileTextExtractor.ExtractTextFromFilesAsync(filesForExtraction);
+
+            foreach (var file in extractedFiles)
+            {
+                if (file.Pages.Any())
+                {
+                    var fileName = Path.GetFileName(file.FileName);
+                    metadata[fileName] = file.Pages.ToDictionary(p => p.PageNumber.ToString(), p => p.Text);
+                }
+            }
+
+            var updatedJson = JsonConvert.SerializeObject(metadata, Formatting.Indented);
+            var putMetadataRequest = new PutObjectRequest
+            {
+                BucketName = bucketName,
+                Key = metadataKey,
+                ContentBody = updatedJson
+            };
+
+            await _s3Client.PutObjectAsync(putMetadataRequest);
+        }
 
     }
 }

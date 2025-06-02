@@ -82,11 +82,18 @@ namespace MyBackendApi.Controllers
         }
 
         [HttpPost("questions/{questionId}/details")]
-        public async Task<IActionResult> AddAnswer(Guid questionId, [FromBody] AddAnswerRequest request)
+        public async Task<IActionResult> AddAnswer(Guid questionId, [FromForm] string content, [FromForm] List<IFormFile> files)
         {
             var currentUserId = GetUserIdFromToken();
+            var request = new AddAnswerRequest { Content = content };
             var answer = await _answerService.AddAnswerAsync(questionId, request, currentUserId);
             var questionAuthorId = await _questionService.GetQuestionAuthorByIdAsync(questionId);
+
+
+            if (files != null && files.Count > 0)
+            {
+                await _s3Service.UploadAnswerFilesAndUpdateMetadataAsync(questionId, answer.Id, files);
+            }
 
             if (ConnectedUsers.UserConnections.TryGetValue(questionAuthorId, out var connectionId))
             {

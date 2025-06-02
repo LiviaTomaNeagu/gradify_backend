@@ -1,28 +1,38 @@
-﻿namespace MyBackedApi.Helpers
+﻿using System.Globalization;
+using System.Text;
+using System.Text.RegularExpressions;
+
+namespace MyBackedApi.Helpers
 {
     public static class DocumentMatch
     {
         public static bool FuzzyMatch(string text, string searchTerm)
         {
-            var textWords = Tokenize(text);
-            var searchWords = Tokenize(searchTerm);
+            var normalizedText = Normalize(text);
+            var normalizedSearch = Normalize(searchTerm);
 
-            // Verifici dacă TOATE cuvintele din searchTerm există în text
-            return searchWords.All(word => textWords.Contains(word));
+            return normalizedText.Contains(normalizedSearch);
         }
 
-        private static HashSet<string> Tokenize(string text)
+        private static string Normalize(string input)
         {
-            // Normalizează textul: lowercase, elimină semne de punctuație, sparge în cuvinte
-            var cleaned = new string(text
-                .ToLowerInvariant()
-                .Select(c => char.IsLetterOrDigit(c) || char.IsWhiteSpace(c) ? c : ' ')
-                .ToArray());
+            if (string.IsNullOrEmpty(input))
+                return "";
 
-            return cleaned
-                .Split(' ', StringSplitOptions.RemoveEmptyEntries)
-                .ToHashSet();
+            // Elimină diacriticele
+            var normalized = input.Normalize(NormalizationForm.FormD);
+            var withoutDiacritics = new StringBuilder();
+            foreach (var c in normalized)
+            {
+                var category = CharUnicodeInfo.GetUnicodeCategory(c);
+                if (category != UnicodeCategory.NonSpacingMark)
+                    withoutDiacritics.Append(c);
+            }
+
+            // Elimină spațiile, punctuația, trece la lowercase
+            var result = Regex.Replace(withoutDiacritics.ToString(), @"[\s\p{P}]", "").ToLowerInvariant();
+
+            return result;
         }
-
     }
 }
