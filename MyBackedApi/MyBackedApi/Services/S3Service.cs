@@ -105,6 +105,9 @@ namespace MyBackedApi.Services
             // Pregătește dictionary pentru fișierele răspunsurilor
             var answerFiles = new Dictionary<Guid, List<AttachmentsDto>>();
 
+            if (response?.S3Objects == null || response.S3Objects.Count == 0)
+                return; // sau poți continua fără să adaugi nimic în liste
+
             foreach (var s3Object in response.S3Objects)
             {
                 var relativePath = s3Object.Key.Substring(prefix.Length); // ce e după {questionId}/
