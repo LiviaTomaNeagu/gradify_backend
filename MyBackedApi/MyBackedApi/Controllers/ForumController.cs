@@ -2,13 +2,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.Data.SqlClient;
 using MyBackedApi.DTOs.Forum.Requests;
 using MyBackedApi.DTOs.Forum.Responses;
 using MyBackedApi.DTOs.Notifications.Requests;
 using MyBackedApi.Enums;
 using MyBackedApi.Hubs;
-using MyBackedApi.Models;
 using MyBackedApi.Services;
 using MyBackendApi.Services;
 
@@ -44,8 +42,8 @@ namespace MyBackendApi.Controllers
             if (attachments != null && attachments.Any())
             {
                 var urls = await _s3Service.AddMultipleFilesAsync(attachments, "attachments/" + question.Id.ToString());
-                await _questionService.AddQuestionDocumentsAsync(question);
             }
+            await _questionService.AddQuestionDocumentsAsync(question);
 
             return Ok(new BaseResponseEmpty { Message = "Question added!" });
         }
@@ -115,7 +113,7 @@ namespace MyBackendApi.Controllers
             }
 
 
-            return CreatedAtAction(nameof(AddAnswer), new { questionId }, new {answer.Id, answer.QuestionId, answer.Content, answer.CreatedAt, answer.UserId} );
+            return CreatedAtAction(nameof(AddAnswer), new { questionId }, new { answer.Id, answer.QuestionId, answer.Content, answer.CreatedAt, answer.UserId });
         }
 
         [HttpPost("get-related-questions")]

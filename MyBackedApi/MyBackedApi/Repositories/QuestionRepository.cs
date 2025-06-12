@@ -254,7 +254,7 @@ namespace MyBackendApi.Repositories
             var weights = new Dictionary<string, double>
     {
         { "title", 1.0 },
-        { "content", 1.0 },
+        { "content", 1.025 },
         { "image", 1.0 },
         { "document", 1.3 } // Boost implicit pentru documente
     };
