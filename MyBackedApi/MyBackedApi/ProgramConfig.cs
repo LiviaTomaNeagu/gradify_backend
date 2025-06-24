@@ -23,7 +23,7 @@ namespace MyBackedApi
         {
             services.AddSwaggerGen(options =>
             {
-                options.SwaggerDoc("v1", new OpenApiInfo { Title = "Wildlife Guardian Api", Version = "v1" });
+                options.SwaggerDoc("v1", new OpenApiInfo { Title = "Backend Api", Version = "v1" });
                 options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     Description = "JWT Authorization header using the Bearer scheme. Just enter your token in the box below.",
@@ -87,7 +87,7 @@ namespace MyBackedApi
                 });
                 app.UseSwaggerUI(c =>
                 {
-                    c.SwaggerEndpoint("/api/swagger/v1/swagger.json", "Wildlife Guardian Api");
+                    c.SwaggerEndpoint("/api/swagger/v1/swagger.json", "Backend Api");
                     c.RoutePrefix = "api/swagger";
                 });
             }
